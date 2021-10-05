@@ -1,0 +1,9 @@
+{
+    "links": {
+        "github": "{{COM:github.baseUrl}}/{{COM:github.tag}}"
+    },
+    "github": {
+        "baseUrl": "https://github.com",
+        "tag": "KevinNovak"
+    }
+}

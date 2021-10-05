@@ -1,0 +1,18 @@
+{
+    "data": {
+        "intro": {
+            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
+            "myLocation": ["I live at the following address:", "{{REF:aboutMe.address}}"],
+            "myGitHub": "My GitHub is: {{COM:links.github}}"
+        },
+        "regexes": {
+            "hello": { "pattern": "hello", "flags": "i" }
+        }
+    },
+    "refs": {
+        "aboutMe": {
+            "favoriteColor": "Blue",
+            "address": ["P. Sherman", "42 Wallaby Way", "Sydney, NSW"]
+        }
+    }
+}
