@@ -45,8 +45,13 @@ We could have additional translations of this file, for example: `lang.fr.json`,
 Using Linguini, we can retrieve the language item from the appropriate file by passing in the location of the item, and the language code to use:
 
 ```ts
-let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm); // "My favorite color is blue."
-let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', stringTm); // "Ma couleur préférée est le bleu."
+let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm);
+console.log(englishLine);
+// Outputs: "My favorite color is blue."
+
+let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', stringTm);
+console.log(frenchLine);
+// Outputs: "Ma couleur préférée est le bleu."
 ```
 
 ## Initial Setup
