@@ -57,6 +57,8 @@ console.log(frenchLine);
 // Outputs: "Ma couleur préférée est le bleu."
 ```
 
+Here `'intro.myFavoriteColor'` is the category and name of the language item, while `'en'` or `'fr'` tells Linguini which language file to pull from: either `lang.en.json` or `lang.fr.json`.
+
 _Side note: If you're wondering what the `stringTm` is for, see the section below on [Type Mappers](#type-mappers)._
 
 ## Initial Setup
