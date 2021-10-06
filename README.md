@@ -26,7 +26,7 @@
 
 An example language file, `lang.en.json`:
 
-```json
+```jsonc
 {
     "data": {
         // This is a language category:
