@@ -57,6 +57,8 @@ console.log(frenchLine);
 // Outputs: "Ma couleur préférée est le bleu."
 ```
 
+_Side note: If you're wondering what the `stringTm` is for, see the section bellow on [Type Mappers](#type-mappers)._
+
 ## Initial Setup
 
 ### Installation
