@@ -8,22 +8,30 @@
 
 **Npm package** - A JSON-based translation file manager.
 
+`npm install linguini`
+
 ## Table of Contents
 
--   [Example Language File](#example-language-file)
--   [Example Usage](#example-usage)
+-   [Example](#example)
 -   [Initial Setup](#initial-setup)
     -   [Installation](#installation)
-    -   [Usage](#usage)
+    -   [Creating a Linguini Object](#creating-a-linguini-object)
+-   [Type Mappers](#type-mappers)
+-   [References](#references)
+    -   [File references](#file-references)
+    -   [Common references](#common-references)
+    -   [Dynamic variables](#dynamic-variables)
 
-## Example Language File
+## Example
 
 An example language file, `lang.en.json`:
 
 ```json
 {
     "data": {
+        // This is a language category:
         "intro": {
+            // This is a language item:
             "myFavoriteColor": "My favorite color is blue."
         }
     }
@@ -34,9 +42,7 @@ We could have additional translations of this file, for example: `lang.fr.json`,
 
 ![](https://i.imgur.com/l3CMVe8.png)
 
-## Example Usage
-
-An example of using Linguini with the above language file:
+Using Linguini, we can retrieve the language item from the appropriate file by passing in the location of the item, and the language code to use:
 
 ```ts
 let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm); // "My favorite color is blue."
@@ -49,7 +55,7 @@ let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', stringTm); // "Ma c
 
 `npm install linguini`
 
-### Usage
+### Creating a Linguini Object
 
 ```ts
 import { Linguini } from 'linguini';
