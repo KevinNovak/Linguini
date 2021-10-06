@@ -17,10 +17,13 @@
     -   [Installation](#installation)
     -   [Creating a Linguini Object](#creating-a-linguini-object)
 -   [Type Mappers](#type-mappers)
+    -   [Using Type Mappers](#using-type-mappers)
+    -   [Built-In Type Mappers](#built-in-type-mappers)
+    -   [Custom Type Mappers](#custom-type-mappers)
 -   [References](#references)
-    -   [File references](#file-references)
-    -   [Common references](#common-references)
-    -   [Dynamic variables](#dynamic-variables)
+    -   [General References (REF)](#general-references--ref-)
+    -   [Common References (COM)](#common-references--com-)
+-   [Variables](#variables)
 
 ## Example
 
@@ -73,3 +76,19 @@ let fileName = 'lang';
 
 let linguini = new Linguini(folderPath, fileName);
 ```
+
+## Type Mappers
+
+### Using Type Mappers
+
+### Built-In Type Mappers
+
+### Custom Type Mappers
+
+## References
+
+### General References (REF)
+
+### Common References (COM)
+
+## Variables
