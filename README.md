@@ -8,9 +8,13 @@
 
 **Npm package** - A JSON-based translation file manager.
 
-## Installation
+## Table of Contents
 
-`npm install linguini`
+-   [Example Language File](#example-language-file)
+-   [Example Usage](#example-usage)
+-   [Initial Setup](#initial-setup)
+    -   [Installation](#installation)
+    -   [Usage](#usage)
 
 ## Example Language File
 
@@ -20,12 +24,7 @@ An example language file, `lang.en.json`:
 {
     "data": {
         "intro": {
-            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}."
-        }
-    },
-    "refs": {
-        "aboutMe": {
-            "favoriteColor": "Blue"
+            "myFavoriteColor": "My favorite color is blue."
         }
     }
 }
@@ -40,14 +39,26 @@ We could have additional translations of this file, for example: `lang.fr.json`,
 An example of using Linguini with the above language file:
 
 ```ts
-let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm); // "My favorite color is Blue."
+let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm); // "My favorite color is blue."
 let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', stringTm); // "Ma couleur préférée est le bleu."
 ```
 
-## Setup
+## Initial Setup
+
+### Installation
 
 `npm install linguini`
 
+### Usage
+
 ```ts
-let linguini = new Linguini(path.join(__dirname, './data'), 'lang');
+import { Linguini } from 'linguini';
+
+ // The folder path containing the language files.
+let folderPath = path.join(__dirname, './data'),
+
+// The base name of the language files to use. Note this should not include any file extensions or language codes.
+let fileName = 'lang';
+
+let linguini = new Linguini(folderPath, fileName);
 ```
