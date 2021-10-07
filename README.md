@@ -17,7 +17,6 @@
     -   [Installation](#installation)
     -   [Creating a Linguini Object](#creating-a-linguini-object)
 -   [Type Mappers](#type-mappers)
-    -   [Using Type Mappers](#using-type-mappers)
     -   [Built-In Type Mappers](#built-in-type-mappers)
     -   [Custom Type Mappers](#custom-type-mappers)
 -   [References](#references)
