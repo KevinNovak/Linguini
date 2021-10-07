@@ -36,7 +36,8 @@ An example language file, `lang.en.json`:
             // This is a language item:
             "myFavoriteColor": "My favorite color is blue."
         }
-    }
+    },
+    "refs": {}
 }
 ```
 
@@ -118,7 +119,8 @@ And in our language file:
         "regexes": {
             "hello": { "pattern": "hello", "flags": "i" }
         }
-    }
+    },
+    "refs": {}
 }
 ```
 
@@ -143,7 +145,8 @@ And in our language file, we can define `Person` objects like so:
             "batman": { "firstName": "Bruce", "lastName": "Wayne" },
             "superman": { "firstName": "Clark", "lastName": "Kent" }
         }
-    }
+    },
+    "refs": {}
 }
 ```
 
