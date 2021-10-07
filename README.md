@@ -184,7 +184,7 @@ If you find yourself repeating the same word or phrase over and over in a langua
 
 ### General References (REF)
 
-General references are defined in a language file using double curly braces with a `REF:` prefix like so: `{{REF:refCategory.refItem}}`, and are used to point to an item in the `"refs"` section of the language file.
+General references are defined in a language file using double curly braces with a `REF:` prefix like so: `{{REF:myCategory.myItem}}`, and are used to point to an item in the `"refs"` section of the language file.
 
 Here is an example:
 
@@ -220,7 +220,7 @@ console.log(yourFavoriteColor);
 
 ### Common References (COM)
 
-Common References are handy when you want to use the same word/phrase across _multiple_ language files. Links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
+Common References are handy when you want to use the same word/phrase across _multiple_ language files. For example, links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
 
 To use Common References, create a file that matches your language file names, but use `common` as the language code. For example: `lang.common.json`.
 
@@ -234,4 +234,27 @@ In the common language file, you can define references like so:
         "github": "https://github.com/KevinNovak"
     }
 }
+```
+
+Then in _any language file_, you can refer to a common reference by using using double curly braces with a `COM:` prefix like so: `{{COM:myCategory.myItem}}`.
+
+So continuing with the above common file example, we can use this link in another language file like so:
+
+```json
+{
+    "data": {
+        "aboutMe": {
+            "myGitHub": "Follow me on GitHub at {{COM:links.github}}!"
+        }
+    },
+    "refs": {}
+}
+```
+
+And in the code:
+
+```js
+let myGitHub = linguini.get('aboutMe.myGitHub', 'en', stringTm);
+console.log(myGitHub);
+// Outputs: "Follow me on GitHub at https://github.com/KevinNovak!"
 ```
