@@ -197,7 +197,9 @@ Here is an example:
         }
     },
     "refs": {
+        // This is a general reference category:
         "aboutMe": {
+            // This is a general reference item:
             "favoriteColor": "purple"
         }
     }
@@ -218,4 +220,18 @@ console.log(yourFavoriteColor);
 
 ### Common References (COM)
 
-Common References are handy when you want to use the same word/phrase across _multiple_ language files. Links are a good example, since links are typically displayed alongside translated text, but often stay the same regardless of language.
+Common References are handy when you want to use the same word/phrase across _multiple_ language files. Links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
+
+To use Common References, create a file that matches your language file names, but use `common` as the language code. For example: `lang.common.json`.
+
+In the common language file, you can define references like so:
+
+```jsonc
+{
+    // This is a common reference category:
+    "links": {
+        // This is a common reference item:
+        "github": "https://github.com/KevinNovak"
+    }
+}
+```
