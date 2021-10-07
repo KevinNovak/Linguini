@@ -188,11 +188,12 @@ General references are defined in a language file using double curly braces with
 
 Here is an example:
 
-```jsonc
+```json
 {
     "data": {
         "intro": {
-            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}."
+            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
+            "yourFavoriteColor": "Is your favorite color {{REF:aboutMe.favoriteColor}} too?"
         }
     },
     "refs": {
@@ -206,9 +207,13 @@ Here is an example:
 And in the code:
 
 ```js
-let favoriteColor = linguini.get('intro.myFavoriteColor', 'en', stringTm);
-console.log(favoriteColor);
+let myFavoriteColor = linguini.get('intro.myFavoriteColor', 'en', stringTm);
+console.log(myFavoriteColor);
 // Outputs: "My favorite color is purple!"
+
+let yourFavoriteColor = linguini.get('intro.yourFavoriteColor', 'en', stringTm);
+console.log(yourFavoriteColor);
+// Outputs: "Is your favorite color purple too?"
 ```
 
 ### Common References (COM)
