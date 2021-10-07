@@ -83,9 +83,47 @@ let linguini = new Linguini(folderPath, fileName);
 
 ## Type Mappers
 
-### Using Type Mappers
+Type Mappers are a special kind of function which allow Linguini to convert the JSON language item that was retrieved from the language file into any type of your choice.
 
 ### Built-In Type Mappers
+
+Linguini has many built-in Type Mappers which can be used inside the `Linguini#get()` method to retrieve language item values as specific types.
+
+Linguini's built-in Type Mappers:
+
+-   `stringTm`
+-   `booleanTm`
+-   `numberTm`
+-   `bigIntTm`
+-   `dateTm`
+-   `regExpTm`
+-   `urlTm`
+
+For example, let's say you want Linguini to retrieve, not just a plain string, but a [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object. Linguini has a built-in Type Mapper to convert a JSON language item into a `RegExp`.
+
+Simply import and use the `regExpTm` Type Mapper inside the `Linguini#get()` method:
+
+```ts
+import { regExpTm } from 'linguini';
+
+// ...
+
+let regex = linguini.get('regexes.hello', 'en', regExpTm);
+```
+
+And in our language file:
+
+```json
+{
+    "data": {
+        "regexes": {
+            "hello": { "pattern": "hello", "flags": "i" }
+        }
+    }
+}
+```
+
+Notice how this language item is not just a string, but has 2 properties: `pattern` and `flags`. Using Type Mappers allows Linguini to convert just about any JSON data into any type you wish.
 
 ### Custom Type Mappers
 
