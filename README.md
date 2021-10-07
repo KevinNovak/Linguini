@@ -21,8 +21,8 @@
     -   [Custom Type Mappers](#custom-type-mappers)
 -   [Variables](#variables)
 -   [References](#references)
-    -   [General References (REF)](#general-references--ref-)
-    -   [Common References (COM)](#common-references--com-)
+    -   [General References (REF)](#general-references-ref)
+    -   [Common References (COM)](#common-references-com)
 
 ## Example
 
