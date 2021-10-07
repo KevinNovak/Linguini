@@ -19,10 +19,10 @@
 -   [Type Mappers](#type-mappers)
     -   [Built-In Type Mappers](#built-in-type-mappers)
     -   [Custom Type Mappers](#custom-type-mappers)
+-   [Variables](#variables)
 -   [References](#references)
     -   [General References (REF)](#general-references--ref-)
     -   [Common References (COM)](#common-references--com-)
--   [Variables](#variables)
 
 ## Example
 
@@ -150,6 +150,8 @@ And in our language file, we can define `Person` objects like so:
 }
 ```
 
+## Variables
+
 ## References
 
 If you find yourself repeating the same word or phrase over and over in a language file, then references will be your best friend! You can define a commonly used word/phrase once, and then reference it anywhere you need it!
@@ -159,5 +161,3 @@ If you find yourself repeating the same word or phrase over and over in a langua
 ### Common References (COM)
 
 Common References are handy when you want to use the same word/phrase across _multiple_ language files. Links are a good example, since links are typically displayed alongside translated text, but often stay the same regardless of language.
-
-## Variables
