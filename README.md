@@ -131,9 +131,7 @@ If Linguini doesn't have a built-in Type Mapper that suits your needs, you can a
 For example, we can create `Person` Type Mapper, `personTm`:
 
 ```js
-var personTm = function (jsonValue) {
-    return new Person(jsonValue.firstName, jsonValue.lastName)();
-};
+var personTm = jsonValue => new Person(jsonValue.firstName, jsonValue.lastName);
 ```
 
 And in our language file, we can define `Person` objects like so:
