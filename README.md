@@ -126,6 +126,29 @@ Notice how this language item is not just a string, but has 2 properties: `patte
 
 ### Custom Type Mappers
 
+If Linguini doesn't have a built-in Type Mapper that suits your needs, you can always create you own. A Type Mapper is simply a function that takes the JSON language item and returns the mapped type.
+
+For example, we can create `Person` Type Mapper, `personTm`:
+
+```js
+var personTm = function (jsonValue) {
+    return new Person(jsonValue.firstName, jsonValue.lastName)();
+};
+```
+
+And in our language file, we can define `Person` objects like so:
+
+```json
+{
+    "data": {
+        "superheroes": {
+            "batman": { "firstName": "Bruce", "lastName": "Wayne" },
+            "superman": { "firstName": "Clark", "lastName": "Kent" }
+        }
+    }
+}
+```
+
 ## References
 
 ### General References (REF)
