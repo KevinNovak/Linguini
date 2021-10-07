@@ -152,6 +152,32 @@ And in our language file, we can define `Person` objects like so:
 
 ## Variables
 
+Variables allow you to dynamically pass in values to your language items. A variable can be defined in a language file using double curly braces like so: `{{MY_VARIABLE}}`.
+
+Here is a full example:
+
+```json
+{
+    "data": {
+        "intro": {
+            "welcome": "Welcome {{FIRST_NAME}} {{LAST_NAME}} to our club!"
+        }
+    },
+    "refs": {}
+}
+```
+
+Then in our code, we can pass in values for the variables like so:
+
+```js
+let welcomeLine = linguini.get('intro.welcome', 'en', stringTm, {
+    FIRST_NAME: 'Harley',
+    LAST_NAME: 'Quinn',
+});
+console.log(welcomeLine);
+// Outputs: "Welcome Harley Quinn to our club!"
+```
+
 ## References
 
 If you find yourself repeating the same word or phrase over and over in a language file, then references will be your best friend! You can define a commonly used word/phrase once, and then reference it anywhere you need it!
