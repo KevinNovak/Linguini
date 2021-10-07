@@ -184,7 +184,7 @@ If you find yourself repeating the same word or phrase over and over in a langua
 
 ### General References (REF)
 
-General references are defined in a language file using double curly braces, a `REF:` prefix like so: `{{REF:refCategory.refItem}}`, and are used to point to an item in the `"refs"` section of the language file.
+General references are defined in a language file using double curly braces with a `REF:` prefix like so: `{{REF:refCategory.refItem}}`, and are used to point to an item in the `"refs"` section of the language file.
 
 Here is an example:
 
