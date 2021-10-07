@@ -1,13 +1,13 @@
 import { assert, expect } from 'chai';
 import path from 'path';
-import { Linguini, regexTm, stringTm } from '../../src';
+import { Linguini, regExpTm, stringTm } from '../../src';
 
 describe('Linguini', (): void => {
     let linguini = new Linguini(path.join(__dirname, './data'), 'lang');
 
     describe('#get()', (): void => {
         it('Regular expression', (): void => {
-            let regex = linguini.get('regexes.hello', 'en', regexTm);
+            let regex = linguini.get('regexes.hello', 'en', regExpTm);
             expect(regex.toString()).to.equal('/hello/i');
             assert(regex.test('Hello World!'));
             assert(!regex.test('Goodbye Cruel World!'));
