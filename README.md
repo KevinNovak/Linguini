@@ -184,6 +184,33 @@ If you find yourself repeating the same word or phrase over and over in a langua
 
 ### General References (REF)
 
+General references are defined in a language file using double curly braces, a `REF:` prefix like so: `{{REF:refCategory.refItem}}`, and are used to point to an item in the `"refs"` section of the language file.
+
+Here is an example:
+
+```jsonc
+{
+    "data": {
+        "intro": {
+            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}."
+        }
+    },
+    "refs": {
+        "aboutMe": {
+            "favoriteColor": "purple"
+        }
+    }
+}
+```
+
+And in the code:
+
+```js
+let favoriteColor = linguini.get('intro.myFavoriteColor', 'en', stringTm);
+console.log(favoriteColor);
+// Outputs: "My favorite color is purple!"
+```
+
 ### Common References (COM)
 
 Common References are handy when you want to use the same word/phrase across _multiple_ language files. Links are a good example, since links are typically displayed alongside translated text, but often stay the same regardless of language.
