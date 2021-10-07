@@ -188,7 +188,7 @@ General references are defined in a language file using double curly braces with
 
 Here is an example:
 
-```json
+```jsonc
 {
     "data": {
         "intro": {
