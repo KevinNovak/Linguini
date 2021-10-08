@@ -14,8 +14,12 @@ export class Linguini {
     private options: LinguiniOptions = {
         replacementLevels: 10,
     };
+    private comData: { [location: string]: string } = {};
     private langDatas: {
-        [langCode: string]: { [location: string]: any };
+        [langCode: string]: {
+            data: { [location: string]: any };
+            refs: { [location: string]: string };
+        };
     } = {};
 
     /**
@@ -49,6 +53,7 @@ export class Linguini {
             for (let i = 0; i < this.options.replacementLevels; i++) {
                 comVars = DataUtils.replaceVariablesInObj(comVars, comVars);
             }
+            this.comData = comVars;
         }
 
         let fileNames = FileUtils.readFileNamesSync(this.folderPath);
@@ -74,7 +79,10 @@ export class Linguini {
             langData = DataUtils.replaceVariablesInObj(langFile.data, comVars);
 
             // Store lang data
-            this.langDatas[langCode] = DataUtils.flatten(langData);
+            this.langDatas[langCode] = {
+                data: DataUtils.flatten(langData),
+                refs: refVars,
+            };
         }
     }
 
@@ -108,10 +116,30 @@ export class Linguini {
      * @returns The retrieved language file item.
      */
     public getRaw(location: string, langCode: string, variables?: { [name: string]: string }): any {
-        let output = this.langDatas[langCode][location];
+        let data = this.langDatas[langCode].data[location];
         if (variables) {
-            output = DataUtils.replaceVariablesInObj(output, variables);
+            data = DataUtils.replaceVariablesInObj(data, variables);
         }
-        return output;
+        return data;
+    }
+
+    public getRef(
+        location: string,
+        langCode: string,
+        variables?: { [name: string]: string }
+    ): string {
+        let ref = this.langDatas[langCode].refs[location];
+        if (variables) {
+            ref = DataUtils.replaceVariablesInObj(ref, variables);
+        }
+        return ref;
+    }
+
+    public getCom(location: string, variables?: { [name: string]: string }): string {
+        let com = this.comData[location];
+        if (variables) {
+            com = DataUtils.replaceVariablesInObj(com, variables);
+        }
+        return com;
     }
 }
