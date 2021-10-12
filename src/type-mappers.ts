@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { TypeMapper } from './models/internal-models';
-import { StringUtils } from './utils';
+import { StringUtils } from './utils/';
 
 let stringTm: TypeMapper<string> = (jsonValue: any) => StringUtils.join(jsonValue, '\n');
 let booleanTm: TypeMapper<boolean> = (jsonValue: any) => Boolean(jsonValue);

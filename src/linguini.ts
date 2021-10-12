@@ -1,6 +1,6 @@
 import path from 'path';
 import { CommonFile, LangFile, TypeMapper } from './models/internal-models';
-import { DataUtils, FileUtils, RegexUtils } from './utils';
+import { DataUtils, FileUtils, RegexUtils } from './utils/';
 
 type LinguiniOptions = {
     /**

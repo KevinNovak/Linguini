@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { DataUtils } from '../../../src/utils';
+import { DataUtils } from '../../../src/utils/';
 
 describe('DataUtils', (): void => {
     describe('#replaceVariablesInObj()', (): void => {

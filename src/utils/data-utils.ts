@@ -1,5 +1,5 @@
-import { StringUtils } from '.';
 import { CategoryItems } from '../models/internal-models';
+import { StringUtils } from './';
 
 export class DataUtils {
     public static replaceVariables(input: string, variables: { [name: string]: string }): string {
