@@ -123,6 +123,15 @@ export class Linguini {
         return data;
     }
 
+    /**
+     * Returns a reference string from a language file.
+     *
+     * @param location - The location of the reference in the language file, using dot-notation, and relative to the "refs" section in the JSON. Ex: `myCategory.myItem`.
+     * @param langCode - The language file code to extract from. Ex: `en`.
+     * @param variables - Any variables (Ex: `{{MY_VARIABLE}}`) to replace in the retrieved data.
+     *
+     * @returns The retrieved language file reference string.
+     */
     public getRef(
         location: string,
         langCode: string,
@@ -135,6 +144,14 @@ export class Linguini {
         return ref;
     }
 
+    /**
+     * Returns a common reference string from the common language file (*.common.json).
+     *
+     * @param location - The location of the reference in the common language file, using dot-notation. Ex: `myCategory.myItem`.
+     * @param variables - Any variables (Ex: `{{MY_VARIABLE}}`) to replace in the retrieved data.
+     *
+     * @returns The retrieved common reference string.
+     */
     public getCom(location: string, variables?: { [name: string]: string }): string {
         let com = this.comData[location];
         if (variables) {
