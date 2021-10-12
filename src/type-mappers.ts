@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import { TypeMapper } from '..';
+import { TypeMapper } from './models/internal-models';
 import { StringUtils } from './utils';
 
 let stringTm: TypeMapper<string> = (jsonValue: any) => StringUtils.join(jsonValue, '\n');
