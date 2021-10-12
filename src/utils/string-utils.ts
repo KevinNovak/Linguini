@@ -5,5 +5,5 @@ export class StringUtils {
 }
 
 export function join(input: string | string[], separator: string): string {
-    return input instanceof Array ? input.join('\n') : input;
+    return input instanceof Array ? input.join(separator) : input;
 }
