@@ -137,7 +137,7 @@ export class Linguini {
         langCode: string,
         variables?: { [name: string]: string }
     ): string {
-        let ref = this.langDatas[langCode].refs[location];
+        let ref = this.langDatas[langCode].refs[`REF:${location}`];
         if (variables) {
             ref = DataUtils.replaceVariablesInObj(ref, variables);
         }
@@ -153,7 +153,7 @@ export class Linguini {
      * @returns The retrieved common reference string.
      */
     public getCom(location: string, variables?: { [name: string]: string }): string {
-        let com = this.comData[location];
+        let com = this.comData[`COM:${location}`];
         if (variables) {
             com = DataUtils.replaceVariablesInObj(com, variables);
         }
