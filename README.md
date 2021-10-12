@@ -218,6 +218,8 @@ console.log(yourFavoriteColor);
 // Outputs: "Is your favorite color purple too?"
 ```
 
+You can also retrieve a reference directly from by using `Linguini#getRef()`.
+
 ### Common References (COM)
 
 Common References are handy when you want to use the same word/phrase across _multiple_ language files. For example, links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
@@ -258,3 +260,5 @@ let myGitHub = linguini.get('aboutMe.myGitHub', 'en', stringTm);
 console.log(myGitHub);
 // Outputs: "Follow me on GitHub at https://github.com/KevinNovak!"
 ```
+
+You can also retrieve a common reference directly by using `Linguini#getCom()`.
