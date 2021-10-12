@@ -218,7 +218,7 @@ console.log(yourFavoriteColor);
 // Outputs: "Is your favorite color purple too?"
 ```
 
-You can also retrieve a reference directly from by using `Linguini#getRef()`.
+You can also retrieve a reference directly by using `Linguini#getRef()`.
 
 ### Common References (COM)
 
