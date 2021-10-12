@@ -48,18 +48,18 @@ We could have additional translations of this file, for example: `lang.fr.json`,
 Using Linguini, we can retrieve the language item from the appropriate file by passing in the location of the item, and the language code to use:
 
 ```js
-let englishLine = linguini.get('intro.myFavoriteColor', 'en', stringTm);
+let englishLine = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
 console.log(englishLine);
 // Outputs: "My favorite color is blue."
 
-let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', stringTm);
+let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', TypeMappers.String);
 console.log(frenchLine);
 // Outputs: "Ma couleur préférée est le bleu."
 ```
 
 Here `'intro.myFavoriteColor'` is the category and name of the language item, while `'en'` or `'fr'` tells Linguini which language file to pull from: either `lang.en.json` or `lang.fr.json`.
 
-_Side note: If you're wondering what the `stringTm` is for, see the section below on [Type Mappers](#type-mappers)._
+_Side note: If you're wondering what the `TypeMappers.String` is for, see the section below on [Type Mappers](#type-mappers)._
 
 ## Initial Setup
 
@@ -91,24 +91,24 @@ Linguini has many built-in Type Mappers which can be used inside the `Linguini#g
 
 Linguini's built-in Type Mappers:
 
--   `stringTm`
--   `booleanTm`
--   `numberTm`
--   `bigIntTm`
--   `dateTm`
--   `regExpTm`
--   `urlTm`
+-   `String`
+-   `Boolean`
+-   `Number`
+-   `BigInt`
+-   `Date`
+-   `RegExp`
+-   `URL`
 
 For example, let's say you want Linguini to retrieve, not just a plain string, but a [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object. Linguini has a built-in Type Mapper to convert a JSON language item into a `RegExp`.
 
-Simply import and use the `regExpTm` Type Mapper inside the `Linguini#get()` method:
+Simply import and use `TypeMappers.RegExp` inside the `Linguini#get()` method:
 
 ```js
-import { regExpTm } from 'linguini';
+import { TypeMappers } from 'linguini';
 
 // ...
 
-let regex = linguini.get('regexes.hello', 'en', regExpTm);
+let regex = linguini.get('regexes.hello', 'en', TypeMappers.RegExp);
 ```
 
 And in our language file:
@@ -170,7 +170,7 @@ Here is a full example:
 Then in our code, we can pass in values for the variables like so:
 
 ```js
-let welcomeLine = linguini.get('intro.welcome', 'en', stringTm, {
+let welcomeLine = linguini.get('intro.welcome', 'en', TypeMappers.String, {
     FIRST_NAME: 'Harley',
     LAST_NAME: 'Quinn',
 });
@@ -209,11 +209,11 @@ Here is an example:
 And in the code:
 
 ```js
-let myFavoriteColor = linguini.get('intro.myFavoriteColor', 'en', stringTm);
+let myFavoriteColor = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
 console.log(myFavoriteColor);
 // Outputs: "My favorite color is purple!"
 
-let yourFavoriteColor = linguini.get('intro.yourFavoriteColor', 'en', stringTm);
+let yourFavoriteColor = linguini.get('intro.yourFavoriteColor', 'en', TypeMappers.String);
 console.log(yourFavoriteColor);
 // Outputs: "Is your favorite color purple too?"
 ```
@@ -256,7 +256,7 @@ So continuing with the above common file example, we can use this link in anothe
 And in the code:
 
 ```js
-let myGitHub = linguini.get('aboutMe.myGitHub', 'en', stringTm);
+let myGitHub = linguini.get('aboutMe.myGitHub', 'en', TypeMappers.String);
 console.log(myGitHub);
 // Outputs: "Follow me on GitHub at https://github.com/KevinNovak!"
 ```
