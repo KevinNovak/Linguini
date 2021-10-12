@@ -14,8 +14,8 @@ describe('Linguini', (): void => {
         });
 
         it('Common variable', (): void => {
-            let myGithub = linguini.get('intro.myGitHub', 'en', stringTm);
-            expect(myGithub).to.equal('My GitHub is: https://github.com/KevinNovak');
+            let line = linguini.get('intro.myGitHub', 'en', stringTm);
+            expect(line).to.equal('My GitHub is: https://github.com/KevinNovak');
         });
     });
 
@@ -23,6 +23,20 @@ describe('Linguini', (): void => {
         it('Basic example', (): void => {
             let json = linguini.getRaw('regexes.hello', 'en');
             expect(json.pattern).to.equal('hello');
+        });
+    });
+
+    describe('#getRef()', (): void => {
+        it('Basic example', (): void => {
+            let ref = linguini.getRef('aboutMe.favoriteColor', 'en');
+            expect(ref).to.equal('Blue');
+        });
+    });
+
+    describe('#getCom()', (): void => {
+        it('Basic example', (): void => {
+            let com = linguini.getCom('links.github');
+            expect(com).to.equal('https://github.com/KevinNovak');
         });
     });
 });
