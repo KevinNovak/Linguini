@@ -91,7 +91,7 @@ export class Linguini {
      *
      * @param location - The location of the item in the language file, using dot-notation, and relative to the "data" section in the JSON. Ex: `myCategory.myItem`.
      * @param langCode - The language file code to extract from. Ex: `en`.
-     * @param typeMapper - A function which maps the retrieved item data to a type.
+     * @param typeMapper - A function which maps the retrieved item data to a type. The could be a built-in function from Linguini's `TypeMappers`  import, or a custom function.
      * @param variables - Any variables (Ex: `{{MY_VARIABLE}}`) to replace in the retrieved data.
      *
      * @returns The retrieved language file item.
