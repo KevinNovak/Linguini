@@ -24,6 +24,9 @@ let regExpTm: TypeMapper<RegExp> = (jsonValue: any) => {
 
 let urlTm: TypeMapper<URL> = (jsonValue: any) => new URL(jsonValue);
 
+/**
+ * Built-in Type Mappers
+ */
 let TypeMappers = {
     String: stringTm,
     Boolean: booleanTm,
