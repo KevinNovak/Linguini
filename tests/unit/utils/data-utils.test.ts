@@ -23,5 +23,12 @@ describe('DataUtils', (): void => {
                 '{"test":"HELLO","nested":{"test":"HELLO"},"array":["HELLO","HELLO"],"mixedArray":["HELLO",true,5],"inside":"Before HELLO After","number":5,"boolean":true,"null":null}'
             );
         });
+
+        it('String example', (): void => {
+            let myString = DataUtils.replaceVariablesInObj('Before {{MY_VARIABLE}} After', {
+                MY_VARIABLE: 'HELLO',
+            });
+            expect(myString).to.equal('Before HELLO After');
+        });
     });
 });

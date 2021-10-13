@@ -14,27 +14,24 @@ export class DataUtils {
         jsonValue: any,
         variables: { [name: string]: string }
     ): any {
-        for (let key in jsonValue) {
-            // "for ... in" loops over all properties, including prototypes
-            // So we need to check if this property belong to only the object
-            if (!jsonValue.hasOwnProperty(key)) {
-                continue;
+        switch (typeof jsonValue) {
+            case 'object': {
+                for (let key in jsonValue) {
+                    // "for ... in" loops over all properties, including prototypes
+                    // So we need to check if this property belong to only the object
+                    if (!jsonValue.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    jsonValue[key] = this.replaceVariablesInObj(jsonValue[key], variables);
+                }
+                break;
             }
-
-            switch (typeof jsonValue[key]) {
-                case 'object': {
-                    this.replaceVariablesInObj(jsonValue[key], variables);
-                    break;
-                }
-                case 'string': {
-                    jsonValue[key] = this.replaceVariables(jsonValue[key], variables);
-                    break;
-                }
-                default: {
-                    continue;
-                }
+            case 'string': {
+                jsonValue = this.replaceVariables(jsonValue, variables);
+                break;
             }
         }
+
         return jsonValue;
     }
 
