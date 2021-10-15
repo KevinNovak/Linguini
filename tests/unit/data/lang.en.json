@@ -3,7 +3,8 @@
         "intro": {
             "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
             "myLocation": ["I live at the following address:", "{{REF:aboutMe.address}}"],
-            "myGitHub": "My GitHub is: {{COM:links.github}}"
+            "myGitHub": "My GitHub is: {{COM:links.github}}",
+            "greeting": "Hello, nice to meet you {{FIRST_NAME}} {{LAST_NAME}}!"
         },
         "regexes": {
             "hello": { "pattern": "hello", "flags": "i" }
