@@ -10,29 +10,41 @@ export class DataUtils {
         return output;
     }
 
-    public static replaceVariablesInObj(
-        jsonValue: any,
-        variables: { [name: string]: string }
-    ): any {
-        switch (typeof jsonValue) {
+    public static replaceVariablesInObj(input: any, variables: { [name: string]: string }): any {
+        let output: any;
+        switch (typeof input) {
             case 'object': {
-                for (let key in jsonValue) {
-                    // "for ... in" loops over all properties, including prototypes
-                    // So we need to check if this property belong to only the object
-                    if (!jsonValue.hasOwnProperty(key)) {
-                        continue;
-                    }
-                    jsonValue[key] = this.replaceVariablesInObj(jsonValue[key], variables);
-                }
+                output = JSON.parse(JSON.stringify(input));
                 break;
             }
-            case 'string': {
-                jsonValue = this.replaceVariables(jsonValue, variables);
+            default: {
+                output = input;
                 break;
             }
         }
 
-        return jsonValue;
+        switch (typeof output) {
+            case 'object': {
+                for (let key in output) {
+                    // "for ... in" loops over all properties, including prototypes
+                    // So we need to check if this property belong to only the object
+                    if (!output.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    output[key] = this.replaceVariablesInObj(output[key], variables);
+                }
+                break;
+            }
+            case 'string': {
+                output = this.replaceVariables(output, variables);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
+        return output;
     }
 
     public static flatten<T>(input: CategoryItems<T>): { [refName: string]: T } {
