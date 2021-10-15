@@ -10,33 +10,24 @@ export class DataUtils {
         return output;
     }
 
-    public static replaceVariablesInObj(input: any, variables: { [name: string]: string }): any {
-        let output: any;
-        switch (typeof input) {
+    public static replaceVariablesInObj(
+        jsonValue: any,
+        variables: { [name: string]: string }
+    ): any {
+        switch (typeof jsonValue) {
             case 'object': {
-                output = JSON.parse(JSON.stringify(input));
-                break;
-            }
-            default: {
-                output = input;
-                break;
-            }
-        }
-
-        switch (typeof output) {
-            case 'object': {
-                for (let key in output) {
+                for (let key in jsonValue) {
                     // "for ... in" loops over all properties, including prototypes
                     // So we need to check if this property belong to only the object
-                    if (!output.hasOwnProperty(key)) {
+                    if (!jsonValue.hasOwnProperty(key)) {
                         continue;
                     }
-                    output[key] = this.replaceVariablesInObj(output[key], variables);
+                    jsonValue[key] = this.replaceVariablesInObj(jsonValue[key], variables);
                 }
                 break;
             }
             case 'string': {
-                output = this.replaceVariables(output, variables);
+                jsonValue = this.replaceVariables(jsonValue, variables);
                 break;
             }
             default: {
@@ -44,7 +35,7 @@ export class DataUtils {
             }
         }
 
-        return output;
+        return jsonValue;
     }
 
     public static flatten<T>(input: CategoryItems<T>): { [refName: string]: T } {

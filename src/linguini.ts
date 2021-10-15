@@ -116,7 +116,7 @@ export class Linguini {
      * @returns The retrieved language file item.
      */
     public getRaw(location: string, langCode: string, variables?: { [name: string]: string }): any {
-        let data = this.langDatas[langCode].data[location];
+        let data = JSON.parse(JSON.stringify(this.langDatas[langCode].data[location]));
         if (variables) {
             data = DataUtils.replaceVariablesInObj(data, variables);
         }
