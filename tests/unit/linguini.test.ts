@@ -13,9 +13,23 @@ describe('Linguini', (): void => {
             assert(!regex.test('Goodbye Cruel World!'));
         });
 
-        it('Common variable', (): void => {
+        it('Common reference', (): void => {
             let line = linguini.get('intro.myGitHub', 'en', TypeMappers.String);
             expect(line).to.equal('My GitHub is: https://github.com/KevinNovak');
+        });
+
+        it('Variable', (): void => {
+            let greetingOne = linguini.get('intro.greeting', 'en', TypeMappers.String, {
+                FIRST_NAME: 'Bruce',
+                LAST_NAME: 'Wayne',
+            });
+            expect(greetingOne).to.equal('Hello, nice to meet you Bruce Wayne!');
+
+            let greetingTwo = linguini.get('intro.greeting', 'en', TypeMappers.String, {
+                FIRST_NAME: 'Clark',
+                LAST_NAME: 'Kent',
+            });
+            expect(greetingTwo).to.equal('Hello, nice to meet you Clark Kent!');
         });
     });
 
