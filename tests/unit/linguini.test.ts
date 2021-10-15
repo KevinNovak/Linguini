@@ -38,6 +38,20 @@ describe('Linguini', (): void => {
             let json = linguini.getRaw('regexes.hello', 'en');
             expect(json.pattern).to.equal('hello');
         });
+
+        it('Variable', (): void => {
+            let greetingOne = linguini.getRaw('intro.greeting', 'en', {
+                FIRST_NAME: 'Bruce',
+                LAST_NAME: 'Wayne',
+            });
+            expect(greetingOne).to.equal('Hello, nice to meet you Bruce Wayne!');
+
+            let greetingTwo = linguini.getRaw('intro.greeting', 'en', {
+                FIRST_NAME: 'Clark',
+                LAST_NAME: 'Kent',
+            });
+            expect(greetingTwo).to.equal('Hello, nice to meet you Clark Kent!');
+        });
     });
 
     describe('#getRef()', (): void => {
