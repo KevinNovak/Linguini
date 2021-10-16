@@ -3,7 +3,9 @@ import path from 'path';
 import { Linguini, LinguiniError, TypeMappers } from '../../src';
 
 describe('Linguini', (): void => {
-    let linguini = new Linguini(path.join(__dirname, './data'), 'lang');
+    let folderPath = path.join(__dirname, './data');
+    let fileName = 'lang';
+    let linguini = new Linguini(folderPath, fileName);
 
     describe('#get()', (): void => {
         it('Regular expression', (): void => {
@@ -61,7 +63,7 @@ describe('Linguini', (): void => {
             assert.throw(
                 myFunction,
                 LinguiniError,
-                `Language item 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.en.json'`
+                `Language item 'badCategory.badName' does not exist in '${folderPath}\\lang.en.json'`
             );
         });
     });
@@ -80,7 +82,7 @@ describe('Linguini', (): void => {
             assert.throw(
                 myFunction,
                 LinguiniError,
-                `Reference string 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.en.json'`
+                `Reference string 'badCategory.badName' does not exist in '${folderPath}\\lang.en.json'`
             );
         });
     });
@@ -99,7 +101,7 @@ describe('Linguini', (): void => {
             assert.throw(
                 myFunction,
                 LinguiniError,
-                `Common reference string 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.common.json'`
+                `Common reference string 'badCategory.badName' does not exist in '${folderPath}\\lang.common.json'`
             );
         });
     });
