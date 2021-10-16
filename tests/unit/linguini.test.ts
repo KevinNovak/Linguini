@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import path from 'path';
-import { Linguini, TypeMappers } from '../../src';
+import { Linguini, LinguiniError, TypeMappers } from '../../src';
 
 describe('Linguini', (): void => {
     let linguini = new Linguini(path.join(__dirname, './data'), 'lang');
@@ -52,6 +52,18 @@ describe('Linguini', (): void => {
             });
             expect(greetingTwo).to.equal('Hello, nice to meet you Clark Kent!');
         });
+
+        it('Does not exist', (): void => {
+            function myFunction(): void {
+                linguini.getRaw('badCategory.badName', 'en');
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Language item 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.en.json'`
+            );
+        });
     });
 
     describe('#getRef()', (): void => {
@@ -59,12 +71,36 @@ describe('Linguini', (): void => {
             let ref = linguini.getRef('aboutMe.favoriteColor', 'en');
             expect(ref).to.equal('Blue');
         });
+
+        it('Does not exist', (): void => {
+            function myFunction(): void {
+                linguini.getRef('badCategory.badName', 'en');
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Reference string 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.en.json'`
+            );
+        });
     });
 
     describe('#getCom()', (): void => {
         it('Basic example', (): void => {
             let com = linguini.getCom('links.github');
             expect(com).to.equal('https://github.com/KevinNovak');
+        });
+
+        it('Does not exist', (): void => {
+            function myFunction(): void {
+                linguini.getCom('badCategory.badName');
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Common reference string 'badCategory.badName' does not exist in 'C:\\Users\\kevin\\Documents\\Code\\Linguini\\tests\\unit\\data\\lang.common.json'`
+            );
         });
     });
 });
