@@ -117,16 +117,23 @@ export class Linguini {
      * @returns The retrieved language file item.
      */
     public getRaw(location: string, langCode: string, variables?: { [name: string]: string }): any {
-        let data = this.langDatas[langCode].data[location];
-        if (!data) {
+        let langData = this.langDatas[langCode];
+        if (langData === undefined) {
+            let filePath = path.join(this.folderPath, `${this.fileName}.${langCode}.json`);
+            throw new LinguiniError(`Language file '${filePath}' not found.`);
+        }
+
+        let jsonValue = langData.data[location];
+        if (jsonValue === undefined) {
             let filePath = path.join(this.folderPath, `${this.fileName}.${langCode}.json`);
             throw new LinguiniError(`Language item '${location}' does not exist in '${filePath}'.`);
         }
-        data = JSON.parse(JSON.stringify(this.langDatas[langCode].data[location]));
+
+        jsonValue = JSON.parse(JSON.stringify(jsonValue));
         if (variables) {
-            data = DataUtils.replaceVariablesInObj(data, variables);
+            jsonValue = DataUtils.replaceVariablesInObj(jsonValue, variables);
         }
-        return data;
+        return jsonValue;
     }
 
     /**
@@ -143,13 +150,20 @@ export class Linguini {
         langCode: string,
         variables?: { [name: string]: string }
     ): string {
-        let ref = this.langDatas[langCode].refs[`REF:${location}`];
-        if (!ref) {
+        let langData = this.langDatas[langCode];
+        if (langData === undefined) {
+            let filePath = path.join(this.folderPath, `${this.fileName}.${langCode}.json`);
+            throw new LinguiniError(`Language file '${filePath}' not found.`);
+        }
+
+        let ref = langData.refs[`REF:${location}`];
+        if (ref === undefined) {
             let filePath = path.join(this.folderPath, `${this.fileName}.${langCode}.json`);
             throw new LinguiniError(
                 `Reference string '${location}' does not exist in '${filePath}'.`
             );
         }
+
         if (variables) {
             ref = DataUtils.replaceVariablesInObj(ref, variables);
         }
@@ -166,12 +180,13 @@ export class Linguini {
      */
     public getCom(location: string, variables?: { [name: string]: string }): string {
         let com = this.comData[`COM:${location}`];
-        if (!com) {
+        if (com === undefined) {
             let filePath = path.join(this.folderPath, `${this.fileName}.common.json`);
             throw new LinguiniError(
                 `Common reference string '${location}' does not exist in '${filePath}'.`
             );
         }
+
         if (variables) {
             com = DataUtils.replaceVariablesInObj(com, variables);
         }

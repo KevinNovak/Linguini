@@ -55,7 +55,19 @@ describe('Linguini', (): void => {
             expect(greetingTwo).to.equal('Hello, nice to meet you Clark Kent!');
         });
 
-        it('Does not exist', (): void => {
+        it('Lang file does not exist', (): void => {
+            function myFunction(): void {
+                linguini.getRaw('myCategory.myName', 'badLang');
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Language file '${folderPath}\\lang.badLang.json' not found`
+            );
+        });
+
+        it('Location does not exist', (): void => {
             function myFunction(): void {
                 linguini.getRaw('badCategory.badName', 'en');
             }
@@ -74,7 +86,19 @@ describe('Linguini', (): void => {
             expect(ref).to.equal('Blue');
         });
 
-        it('Does not exist', (): void => {
+        it('Lang file does not exist', (): void => {
+            function myFunction(): void {
+                linguini.getRef('myCategory.myName', 'badLang');
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Language file '${folderPath}\\lang.badLang.json' not found`
+            );
+        });
+
+        it('Location does not exist', (): void => {
             function myFunction(): void {
                 linguini.getRef('badCategory.badName', 'en');
             }
@@ -93,7 +117,7 @@ describe('Linguini', (): void => {
             expect(com).to.equal('https://github.com/KevinNovak');
         });
 
-        it('Does not exist', (): void => {
+        it('Location does not exist', (): void => {
             function myFunction(): void {
                 linguini.getCom('badCategory.badName');
             }
