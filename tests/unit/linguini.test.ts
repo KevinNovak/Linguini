@@ -60,11 +60,7 @@ describe('Linguini', (): void => {
                 linguini.getRaw('myCategory.myName', 'badLang');
             }
 
-            assert.throw(
-                myFunction,
-                LinguiniError,
-                `Language file '${folderPath}\\lang.badLang.json' not found`
-            );
+            assert.throw(myFunction, LinguiniError, 'Invalid language code: badLang');
         });
 
         it('Location does not exist', (): void => {
@@ -72,11 +68,7 @@ describe('Linguini', (): void => {
                 linguini.getRaw('badCategory.badName', 'en');
             }
 
-            assert.throw(
-                myFunction,
-                LinguiniError,
-                `Language item 'badCategory.badName' does not exist in '${folderPath}\\lang.en.json'`
-            );
+            assert.throw(myFunction, LinguiniError, 'Invalid location: badCategory.badName');
         });
     });
 
@@ -91,11 +83,7 @@ describe('Linguini', (): void => {
                 linguini.getRef('myCategory.myName', 'badLang');
             }
 
-            assert.throw(
-                myFunction,
-                LinguiniError,
-                `Language file '${folderPath}\\lang.badLang.json' not found`
-            );
+            assert.throw(myFunction, LinguiniError, 'Invalid language code: badLang');
         });
 
         it('Location does not exist', (): void => {
@@ -103,11 +91,7 @@ describe('Linguini', (): void => {
                 linguini.getRef('badCategory.badName', 'en');
             }
 
-            assert.throw(
-                myFunction,
-                LinguiniError,
-                `Reference string 'badCategory.badName' does not exist in '${folderPath}\\lang.en.json'`
-            );
+            assert.throw(myFunction, LinguiniError, 'Invalid location: badCategory.badName');
         });
     });
 
@@ -122,11 +106,7 @@ describe('Linguini', (): void => {
                 linguini.getCom('badCategory.badName');
             }
 
-            assert.throw(
-                myFunction,
-                LinguiniError,
-                `Common reference string 'badCategory.badName' does not exist in '${folderPath}\\lang.common.json'`
-            );
+            assert.throw(myFunction, LinguiniError, 'Invalid location: badCategory.badName');
         });
     });
 });
