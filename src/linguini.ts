@@ -67,13 +67,14 @@ export class Linguini {
 
             // Extract ref variables
             let refVars = DataUtils.flattenToVariables(langFile.refs, 'REF:');
+            refVars = DataUtils.replaceVariablesInObj(refVars, comVars);
             for (let i = 0; i < this.options.replacementLevels; i++) {
                 refVars = DataUtils.replaceVariablesInObj(refVars, refVars);
             }
 
             // Replace variables in lang data
-            let langData = DataUtils.replaceVariablesInObj(langFile.data, refVars);
-            langData = DataUtils.replaceVariablesInObj(langFile.data, comVars);
+            let langData = DataUtils.replaceVariablesInObj(langFile.data, comVars);
+            langData = DataUtils.replaceVariablesInObj(langFile.data, refVars);
 
             // Store lang data
             this.langDatas[langCode] = {

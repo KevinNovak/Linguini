@@ -78,6 +78,11 @@ describe('Linguini', (): void => {
             expect(ref).to.equal('Blue');
         });
 
+        it('Common reference', (): void => {
+            let ref = linguini.getRef('aboutMe.myTwitch', 'en');
+            expect(ref).to.equal('NovaKevin (https://www.twitch.tv/novakevin)');
+        });
+
         it('Lang file does not exist', (): void => {
             function myFunction(): void {
                 linguini.getRef('myCategory.myName', 'badLang');

@@ -4,6 +4,7 @@
             "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
             "myLocation": ["I live at the following address:", "{{REF:aboutMe.address}}"],
             "myGitHub": "My GitHub is: {{COM:links.github}}",
+            "myTwitch": "My Twitch is: {{REF:aboutMe.myTwitch}}",
             "greeting": "Hello, nice to meet you {{FIRST_NAME}} {{LAST_NAME}}!"
         },
         "regexes": {
@@ -13,7 +14,8 @@
     "refs": {
         "aboutMe": {
             "favoriteColor": "Blue",
-            "address": ["P. Sherman", "42 Wallaby Way", "Sydney, NSW"]
+            "address": ["P. Sherman", "42 Wallaby Way", "Sydney, NSW"],
+            "myTwitch": "NovaKevin ({{COM:links.twitch}})"
         }
     }
 }

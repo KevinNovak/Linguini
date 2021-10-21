@@ -1,6 +1,7 @@
 {
     "links": {
-        "github": "{{COM:github.baseUrl}}/{{COM:github.tag}}"
+        "github": "{{COM:github.baseUrl}}/{{COM:github.tag}}",
+        "twitch": "https://www.twitch.tv/novakevin"
     },
     "github": {
         "baseUrl": "https://github.com",
