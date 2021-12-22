@@ -1,6 +1,6 @@
 {
     "name": "linguini",
-    "version": "1.2.9",
+    "version": "1.2.10",
     "author": "Kevin Novak",
     "description": "A JSON-based translation file manager.",
     "license": "MIT",
