@@ -7,6 +7,42 @@ describe('Linguini', (): void => {
     let fileName = 'lang';
     let linguini = new Linguini(folderPath, fileName);
 
+    describe('#constructor()', (): void => {
+        it('Custom common file', (): void => {
+            let linguini = new Linguini(folderPath, fileName, {
+                customCommonFile: path.join(
+                    __dirname,
+                    './data/custom-common-file/custom.common.json'
+                ),
+            });
+
+            let com = linguini.getCom('custom.description');
+            expect(com).to.equal('This is a custom common file.');
+
+            let line = linguini.get('intro.myGitHub', 'en', TypeMappers.String);
+            expect(line).to.equal('My GitHub is: https://github.com/KevinNovak');
+        });
+
+        it('Custom common file does not exist', (): void => {
+            let customCommonFile = path.join(
+                __dirname,
+                './data/custom-common-file/does-not-exist.common.json'
+            );
+
+            function myFunction(): void {
+                new Linguini(folderPath, fileName, {
+                    customCommonFile,
+                });
+            }
+
+            assert.throw(
+                myFunction,
+                LinguiniError,
+                `Custom common file does not exist: ${customCommonFile}`
+            );
+        });
+    });
+
     describe('#get()', (): void => {
         it('Regular expression', (): void => {
             let regex = linguini.get('regexes.hello', 'en', TypeMappers.RegExp);

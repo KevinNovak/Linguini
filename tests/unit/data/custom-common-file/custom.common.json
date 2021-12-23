@@ -1,0 +1,12 @@
+{
+    "custom": {
+        "description": "This is a custom common file."
+    },
+    "links": {
+        "github": "{{COM:github.baseUrl}}/{{COM:github.tag}}"
+    },
+    "github": {
+        "baseUrl": "https://github.com",
+        "tag": "KevinNovak"
+    }
+}

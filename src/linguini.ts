@@ -9,11 +9,16 @@ type LinguiniOptions = {
      * @defaultValue `10`
      */
     replacementLevels: number;
+    /**
+     * Full path to a custom common language file.
+     */
+    customCommonFile?: string;
 };
 
 export class Linguini {
     private options: LinguiniOptions = {
         replacementLevels: 10,
+        customCommonFile: undefined,
     };
     private comData: { [location: string]: string } = {};
     private langDatas: {
@@ -35,9 +40,16 @@ export class Linguini {
     constructor(folderPath: string, fileName: string, options: Partial<LinguiniOptions> = {}) {
         this.options = Object.assign(this.options, options);
 
+        // Validate options
+        if (this.options.customCommonFile && !FileUtils.exists(this.options.customCommonFile)) {
+            throw new LinguiniError(
+                `Custom common file does not exist: ${this.options.customCommonFile}`
+            );
+        }
+
         // Locate common file
-        let comFileName = `${fileName}.common.json`;
-        let comFilePath = path.join(folderPath, comFileName);
+        let comFilePath =
+            this.options.customCommonFile ?? path.join(folderPath, `${fileName}.common.json`);
 
         let comVars: { [refName: string]: string } = {};
         if (FileUtils.exists(comFilePath)) {
