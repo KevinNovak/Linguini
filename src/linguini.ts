@@ -116,7 +116,7 @@ export class Linguini {
     public getRaw(location: string, langCode: string, variables?: { [name: string]: string }): any {
         let langData = this.langDatas[langCode];
         if (langData === undefined) {
-            throw new LinguiniError(`Invalid language code: ${langCode}'`);
+            throw new LinguiniError(`Invalid language code: ${langCode}`);
         }
 
         let jsonValue = langData.data[location];
@@ -147,7 +147,7 @@ export class Linguini {
     ): string {
         let langData = this.langDatas[langCode];
         if (langData === undefined) {
-            throw new LinguiniError(`Invalid language code: ${langCode}'`);
+            throw new LinguiniError(`Invalid language code: ${langCode}`);
         }
 
         let ref = langData.refs[`REF:${location}`];
