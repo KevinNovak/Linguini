@@ -1,0 +1,8 @@
+{
+    "items": {
+        "zero": "Sin artículos",
+        "one": "{{COUNT}} artículo",
+        "other": "{{COUNT}} artículos"
+    }
+}
+

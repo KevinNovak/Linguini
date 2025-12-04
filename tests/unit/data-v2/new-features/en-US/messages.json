@@ -1,0 +1,12 @@
+{
+    "greetings": ["Hello!", "Hi there!", "Hey!", "Greetings!"],
+    "welcome": "Welcome to {{COM:app.name}}!",
+    "simpleCount": "You have {{COUNT}} messages",
+    "fallbackTest": "This exists in en-US",
+    "nested": {
+        "deep": {
+            "value": "Deep nested value"
+        }
+    }
+}
+

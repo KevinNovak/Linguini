@@ -1,0 +1,5 @@
+{
+    "greetings": ["¡Hola!", "¡Qué tal!", "¡Hey!"],
+    "welcome": "¡Bienvenido a {{COM:app.name}}!",
+    "simpleCount": "Tienes {{COUNT}} mensajes"
+}

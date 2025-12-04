@@ -1,0 +1,8 @@
+{
+    "items": {
+        "zero": "No items",
+        "one": "{{COUNT}} item",
+        "other": "{{COUNT}} items"
+    }
+}
+

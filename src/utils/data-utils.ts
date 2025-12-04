@@ -41,6 +41,7 @@ export class DataUtils {
     /**
      * Flatten a nested object to dot-notation keys.
      * Supports arbitrary nesting depth, or can be limited to a specific depth.
+     * Leaf objects (objects where all values are primitives/arrays) are preserved.
      *
      * @param input - The object to flatten
      * @param prefix - Prefix for keys (used internally for recursion)
@@ -64,9 +65,14 @@ export class DataUtils {
             if (maxDepth !== undefined && nextDepth >= maxDepth) {
                 output[fullKey] = value;
             } else if (this.isPlainObject(value)) {
-                // Recursively flatten nested objects
-                const nested = this.flatten<T>(value, fullKey, maxDepth, nextDepth);
-                Object.assign(output, nested);
+                // Check if this is a plural rules object - preserve these
+                if (this.isPluralRulesObject(value)) {
+                    output[fullKey] = value as T;
+                } else {
+                    // Recursively flatten nested objects
+                    const nested = this.flatten<T>(value, fullKey, maxDepth, nextDepth);
+                    Object.assign(output, nested);
+                }
             } else {
                 // Leaf value (string, array, number, etc.)
                 output[fullKey] = value;
@@ -112,5 +118,39 @@ export class DataUtils {
             !Array.isArray(value) &&
             value.constructor === Object
         );
+    }
+
+    /**
+     * Valid plural rule keys per CLDR specification.
+     */
+    private static PLURAL_KEYS = new Set(['zero', 'one', 'two', 'few', 'many', 'other']);
+
+    /**
+     * Check if an object is a plural rules object (has keys like zero/one/two/few/many/other).
+     * These objects should be preserved as-is rather than flattened.
+     */
+    private static isPluralRulesObject(obj: Record<string, any>): boolean {
+        const keys = Object.keys(obj);
+
+        // Must have at least 'other' (required for plurals)
+        if (!keys.includes('other')) {
+            return false;
+        }
+
+        // All keys must be valid plural keys
+        for (const key of keys) {
+            if (!this.PLURAL_KEYS.has(key)) {
+                return false;
+            }
+        }
+
+        // All values must be strings (the actual plural forms)
+        for (const value of Object.values(obj)) {
+            if (typeof value !== 'string') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

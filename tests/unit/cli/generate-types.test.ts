@@ -161,10 +161,11 @@ describe('CLI: generate-types', (): void => {
         it('should show help with --help', (): void => {
             const output = runCli('--help');
 
-            expect(output).to.include('Linguini Type Generator');
+            expect(output).to.include('Linguini CLI');
             expect(output).to.include('Usage:');
             expect(output).to.include('--output');
             expect(output).to.include('--type-name');
+            expect(output).to.include('validate');
         });
     });
 

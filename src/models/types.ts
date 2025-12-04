@@ -35,6 +35,39 @@ export type ValueAt<T, Path extends string> = Path extends `${infer Key}.${infer
 export type FolderStructure = 'locale-folder' | 'locale-in-filename' | 'auto';
 
 /**
+ * Handler for missing translation keys.
+ * - 'throw': Throw an error (default)
+ * - 'fallback': Use fallbackLocale if available
+ * - 'key': Return the key itself as the value
+ * - Function: Custom handler that receives key and locale, returns a string
+ */
+export type MissingKeyHandler =
+    | 'throw'
+    | 'fallback'
+    | 'key'
+    | ((key: string, locale: string) => string);
+
+/**
+ * Pluralization rules for different counts.
+ */
+export type PluralRules = {
+    zero?: string;
+    one?: string;
+    two?: string;
+    few?: string;
+    many?: string;
+    other: string;
+};
+
+/**
+ * Result of completeness validation.
+ */
+export type ValidationIssue = {
+    key: string;
+    missingIn: string[];
+};
+
+/**
  * Options for creating a new Linguini instance.
  */
 export type LinguiniOptions = {
@@ -71,6 +104,22 @@ export type LinguiniOptions = {
      * @defaultValue `'_refs.json'`
      */
     refsFileName?: string;
+
+    /**
+     * Fallback locale to use when a key is missing in the requested locale.
+     * @example 'en-US'
+     */
+    fallbackLocale?: string;
+
+    /**
+     * How to handle missing translation keys.
+     * - 'throw': Throw an error (default)
+     * - 'fallback': Use fallbackLocale if available, then throw
+     * - 'key': Return the key itself as the value
+     * - Function: Custom handler
+     * @defaultValue `'throw'`
+     */
+    onMissingKey?: MissingKeyHandler;
 };
 
 /**
