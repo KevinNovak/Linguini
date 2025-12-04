@@ -387,3 +387,4 @@ function generateType(node: SchemaNode, indent: number): string {
 // Run the CLI
 main();
 
+
