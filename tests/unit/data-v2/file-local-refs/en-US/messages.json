@@ -1,0 +1,14 @@
+{
+    "data": {
+        "greetings": {
+            "hello": "Hello! {{REF:local.greeting}}",
+            "combined": "{{REF:global.term}} and {{REF:local.greeting}}"
+        }
+    },
+    "refs": {
+        "local": {
+            "greeting": "Welcome to the app!"
+        }
+    }
+}
+

@@ -281,6 +281,136 @@ describe('Linguini v2', (): void => {
             expect(linguini.getLocales()).to.include('en-US');
         });
     });
+
+    describe('Configuration Options', (): void => {
+        describe('commonPath option', (): void => {
+            it('should use custom common file path', (): void => {
+                const langPath = path.join(__dirname, './data-v2/locale-folder-custom');
+                const customCommonPath = path.join(langPath, 'custom-common.json');
+
+                const linguini = new Linguini(langPath, {
+                    commonPath: customCommonPath,
+                });
+
+                const brandName = linguini.common('brand.name');
+                expect(brandName).to.equal('CustomBrand');
+            });
+
+            it('should resolve COM: variables from custom common file', (): void => {
+                const langPath = path.join(__dirname, './data-v2/locale-folder-custom');
+                const customCommonPath = path.join(langPath, 'custom-common.json');
+
+                const linguini = new Linguini(langPath, {
+                    commonPath: customCommonPath,
+                    refsFileName: 'custom-refs.json',
+                });
+
+                const welcome = linguini.t('messages.welcome', 'en-US');
+                expect(welcome).to.equal('Welcome to CustomBrand!');
+            });
+        });
+
+        describe('refsFileName option', (): void => {
+            it('should use custom refs filename', (): void => {
+                const langPath = path.join(__dirname, './data-v2/locale-folder-custom');
+                const customCommonPath = path.join(langPath, 'custom-common.json');
+
+                const linguini = new Linguini(langPath, {
+                    commonPath: customCommonPath,
+                    refsFileName: 'custom-refs.json',
+                });
+
+                const customRef = linguini.ref('terms.custom', 'en-US');
+                expect(customRef).to.equal('custom-term');
+            });
+        });
+
+        describe('replacementLevels option', (): void => {
+            it('should resolve deeply nested references with default levels', (): void => {
+                const langPath = path.join(__dirname, './data-v2/replacement-levels');
+
+                const linguini = new Linguini(langPath);
+
+                const deepRef = linguini.t('test.deepRef', 'en-US');
+                expect(deepRef).to.equal('Value is: FINAL');
+            });
+
+            it('should accept custom replacementLevels option', (): void => {
+                const langPath = path.join(__dirname, './data-v2/replacement-levels');
+
+                // High replacement levels should fully resolve
+                const linguini = new Linguini(langPath, {
+                    replacementLevels: 15,
+                });
+
+                const deepRef = linguini.t('test.deepRef', 'en-US');
+                expect(deepRef).to.equal('Value is: FINAL');
+            });
+        });
+    });
+
+    describe('File-local Refs', (): void => {
+        const langPath = path.join(__dirname, './data-v2/file-local-refs');
+        let linguini: Linguini;
+
+        before(() => {
+            linguini = new Linguini(langPath);
+        });
+
+        it('should resolve refs defined inside individual files', (): void => {
+            const hello = linguini.t('messages.greetings.hello', 'en-US');
+            expect(hello).to.equal('Hello! Welcome to the app!');
+        });
+
+        it('should resolve both global and file-local refs', (): void => {
+            const combined = linguini.t('messages.greetings.combined', 'en-US');
+            expect(combined).to.equal('global-term and Welcome to the app!');
+        });
+
+        it('should access global refs directly', (): void => {
+            const globalTerm = linguini.ref('global.term', 'en-US');
+            expect(globalTerm).to.equal('global-term');
+        });
+
+        it('should access file-local refs directly', (): void => {
+            const localRef = linguini.ref('local.greeting', 'en-US');
+            expect(localRef).to.equal('Welcome to the app!');
+        });
+    });
+
+    describe('Numeric Variables', (): void => {
+        const langPath = path.join(__dirname, './data-v2/locale-folder');
+        let linguini: Linguini;
+
+        before(() => {
+            linguini = new Linguini(langPath);
+        });
+
+        it('should convert numeric variables to strings', (): void => {
+            const error = linguini.t('validation.errors.minLength', 'en-US', { MIN: 5 });
+            expect(error).to.equal('Must be at least 5 characters');
+        });
+
+        it('should handle mixed string and number variables', (): void => {
+            const warning = linguini.t('validation.warnings.lowCredits', 'en-US', { COUNT: 3 });
+            expect(warning).to.equal('You have 3 credits remaining');
+        });
+
+        it('should handle zero as a variable', (): void => {
+            const warning = linguini.t('validation.warnings.lowCredits', 'en-US', { COUNT: 0 });
+            expect(warning).to.equal('You have 0 credits remaining');
+        });
+
+        it('should handle negative numbers', (): void => {
+            const error = linguini.t('validation.errors.minLength', 'en-US', { MIN: -1 });
+            expect(error).to.equal('Must be at least -1 characters');
+        });
+
+        it('should handle floating point numbers', (): void => {
+            const error = linguini.t('validation.errors.minLength', 'en-US', { MIN: 3.14 });
+            expect(error).to.equal('Must be at least 3.14 characters');
+        });
+    });
 });
 
 

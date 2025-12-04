@@ -1,0 +1,18 @@
+{
+    "level1": {
+        "value": "{{COM:level2.value}}"
+    },
+    "level2": {
+        "value": "{{COM:level3.value}}"
+    },
+    "level3": {
+        "value": "{{COM:level4.value}}"
+    },
+    "level4": {
+        "value": "{{COM:level5.value}}"
+    },
+    "level5": {
+        "value": "FINAL"
+    }
+}
+
