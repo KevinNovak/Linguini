@@ -3,5 +3,3 @@
     "farewell": "Goodbye, {{NAME}}! {{REF:phrases.thankYou}}",
     "colorInfo": "Your theme color is {{COM:colors.primary}}"
 }
-
-

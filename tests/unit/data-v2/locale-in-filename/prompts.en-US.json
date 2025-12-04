@@ -2,5 +2,3 @@
     "greeting": "Happy {{REF:terms.birthday}}, {{NAME}}!",
     "farewell": "Goodbye!"
 }
-
-
