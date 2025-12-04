@@ -6,259 +6,551 @@
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 [![Pull Requests](https://img.shields.io/badge/Pull%20Requests-Welcome!-brightgreen)](https://github.com/KevinNovak/Linguini/pulls)
 
-**Npm package** - A JSON-based translation file manager.
+**Npm package** - A type-safe, flexible JSON-based translation file manager.
 
 `npm install linguini`
+
+## What's New in v2.0
+
+- **🔒 Type Safety**: Full TypeScript support with compile-time key validation and autocomplete
+- **📁 Flexible Folder Structure**: Support for any file/folder organization you need
+- **🛠️ Codegen CLI**: Auto-generate TypeScript types from your language files
+- **⬆️ Backward Compatible**: Legacy API still works, deprecated methods guide migration
 
 ## Table of Contents
 
--   [Example](#example)
--   [Initial Setup](#initial-setup)
-    -   [Installation](#installation)
-    -   [Creating a Linguini Object](#creating-a-linguini-object)
--   [Type Mappers](#type-mappers)
-    -   [Built-In Type Mappers](#built-in-type-mappers)
-    -   [Custom Type Mappers](#custom-type-mappers)
--   [Variables](#variables)
--   [References](#references)
-    -   [General References (REF)](#general-references-ref)
-    -   [Common References (COM)](#common-references-com)
+- [Quick Start](#quick-start)
+- [Folder Structures](#folder-structures)
+  - [Locale-Folder Structure](#locale-folder-structure)
+  - [Locale-in-Filename Structure](#locale-in-filename-structure)
+- [Type Safety](#type-safety)
+  - [Generating Types](#generating-types)
+  - [Using Generated Types](#using-generated-types)
+- [API Reference](#api-reference)
+  - [t() - Get Translation](#t---get-translation)
+  - [ref() - Get Reference](#ref---get-reference)
+  - [common() - Get Common Value](#common---get-common-value)
+  - [Utility Methods](#utility-methods)
+- [Variables](#variables)
+- [References](#references)
+  - [General References (REF)](#general-references-ref)
+  - [Common References (COM)](#common-references-com)
+- [Legacy API](#legacy-api)
+- [Migration Guide](#migration-guide)
 
-## Example
-
-An example language file, `lang.en.json`:
-
-```jsonc
-{
-    "data": {
-        // This is a language category:
-        "intro": {
-            // This is a language item:
-            "myFavoriteColor": "My favorite color is blue."
-        }
-    },
-    "refs": {}
-}
-```
-
-We could have additional translations of this file, for example: `lang.fr.json`, `lang.ru.json`, etc:
-
-![](https://i.imgur.com/l3CMVe8.png)
-
-Using Linguini, we can retrieve the language item from the appropriate file by passing in the location of the item, and the language code to use:
-
-```js
-let englishLine = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
-console.log(englishLine);
-// Outputs: "My favorite color is blue."
-
-let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', TypeMappers.String);
-console.log(frenchLine);
-// Outputs: "Ma couleur préférée est le bleu."
-```
-
-Here `'intro.myFavoriteColor'` is the category and name of the language item, while `'en'` or `'fr'` tells Linguini which language file to pull from: either `lang.en.json` or `lang.fr.json`.
-
-_Side note: If you're wondering what the `TypeMappers.String` is for, see the section below on [Type Mappers](#type-mappers)._
-
-## Initial Setup
+## Quick Start
 
 ### Installation
 
-`npm install linguini`
+```bash
+npm install linguini
+```
 
-### Creating a Linguini Object
+### Basic Usage
 
-```js
+```typescript
 import { Linguini } from 'linguini';
 
-// The folder path containing the language files.
-let folderPath = path.join(__dirname, './data');
+// Point to your language files directory
+const linguini = new Linguini('./lang');
 
-// The base name of the language files to use. Note this should not include any file extensions or language codes.
-let fileName = 'lang';
-
-let linguini = new Linguini(folderPath, fileName);
+// Get a translation
+const greeting = linguini.t('prompts.greeting', 'en-US', { NAME: 'Alice' });
+console.log(greeting);
+// Output: "Hello, Alice!"
 ```
 
-## Type Mappers
+## Folder Structures
 
-Type Mappers are a special kind of function which allow Linguini to convert the JSON language item that was retrieved from the language file into any type of your choice.
+Linguini v2 supports two folder structures and will auto-detect which one you're using.
 
-### Built-In Type Mappers
+### Locale-Folder Structure
 
-Linguini has many built-in Type Mappers which can be used inside the `Linguini#get()` method to retrieve language item values as specific types.
+Organize translations by locale folders. Best for larger projects with many files.
 
-Linguini's built-in Type Mappers:
-
--   `String`
--   `Boolean`
--   `Number`
--   `BigInt`
--   `Date`
--   `RegExp`
--   `URL`
-
-For example, let's say you want Linguini to retrieve, not just a plain string, but a [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object. Linguini has a built-in Type Mapper to convert a JSON language item into a `RegExp`.
-
-Simply import and use `TypeMappers.RegExp` inside the `Linguini#get()` method:
-
-```js
-import { TypeMappers } from 'linguini';
-
-// ...
-
-let regex = linguini.get('regexes.hello', 'en', TypeMappers.RegExp);
+```
+lang/
+├── _common.json              # Shared constants (colors, links, emojis)
+├── en-US/
+│   ├── _refs.json           # Reusable translated phrases for this locale
+│   ├── prompts.json         # Translation data
+│   ├── info.json
+│   └── validation/
+│       ├── errors.json
+│       └── warnings.json
+└── es-MX/
+    ├── _refs.json
+    ├── prompts.json
+    └── ...
 ```
 
-And in our language file:
+**Example files:**
 
 ```json
+// lang/_common.json - Universal constants (same for all languages)
 {
-    "data": {
-        "regexes": {
-            "hello": { "pattern": "hello", "flags": "i" }
-        }
+    "colors": {
+        "primary": "#FF5733"
     },
-    "refs": {}
+    "links": {
+        "github": "https://github.com/KevinNovak"
+    },
+    "emojis": {
+        "cake": "🎂"
+    }
 }
 ```
 
-Notice how this language item is not just a string, but has 2 properties: `pattern` and `flags`. Using Type Mappers allows Linguini to convert just about any JSON data into any type you wish.
-
-### Custom Type Mappers
-
-If Linguini doesn't have a built-in Type Mapper that suits your needs, you can always create you own. A Type Mapper is simply a function that takes the JSON language item and returns the mapped type.
-
-For example, we can create `Person` Type Mapper, `personTm`:
-
-```js
-let personTm = jsonValue => new Person(jsonValue.firstName, jsonValue.lastName);
+```json
+// lang/en-US/_refs.json - Reusable translated phrases
+{
+    "terms": {
+        "birthday": "birthday",
+        "anniversary": "anniversary"
+    },
+    "phrases": {
+        "thankYou": "Thank you for using our service!"
+    }
+}
 ```
 
-And in our language file, we can define `Person` objects like so:
+```json
+// lang/en-US/prompts.json - Translation data
+{
+    "greeting": "Happy {{REF:terms.birthday}}, {{NAME}}! {{COM:emojis.cake}}",
+    "farewell": "Goodbye! {{REF:phrases.thankYou}}"
+}
+```
+
+**Accessing translations:**
+
+```typescript
+const linguini = new Linguini('./lang');
+
+// Keys are namespaced by file path
+linguini.t('prompts.greeting', 'en-US', { NAME: 'Alice' });
+// → "Happy birthday, Alice! 🎂"
+
+linguini.t('validation.errors.required', 'en-US');
+// → "This field is required"
+```
+
+### Locale-in-Filename Structure
+
+Include the locale code in each filename. Great for simpler projects or when migrating from v1.
+
+```
+lang/
+├── _common.json
+├── _refs.en-US.json
+├── prompts.en-US.json
+├── prompts.es-MX.json
+├── info.en-US.json
+└── validation/
+    └── errors.en-US.json
+```
+
+**Accessing translations works the same way:**
+
+```typescript
+linguini.t('prompts.greeting', 'en-US');
+linguini.t('validation.errors.required', 'en-US');
+```
+
+### Explicit Structure Configuration
+
+You can explicitly specify which structure to use:
+
+```typescript
+const linguini = new Linguini('./lang', {
+    folderStructure: 'locale-folder',     // or 'locale-in-filename' or 'auto'
+});
+```
+
+## Type Safety
+
+Linguini v2 provides full TypeScript support with compile-time key validation.
+
+### Generating Types
+
+Use the CLI to generate TypeScript types from your language files:
+
+```bash
+npx linguini generate ./lang --output ./src/types/translations.ts
+```
+
+This scans your language files and generates a type definition:
+
+```typescript
+// Auto-generated: src/types/translations.ts
+export type Translations = {
+    prompts: {
+        greeting: string;
+        farewell: string;
+    };
+    info: {
+        about: {
+            title: string;
+            description: string;
+        };
+    };
+    validation: {
+        errors: {
+            required: string;
+            minLength: string;
+        };
+    };
+};
+
+export type TranslationsPath = PathsOf<Translations>;
+```
+
+### Using Generated Types
+
+Import and use the generated types for full IDE support:
+
+```typescript
+import { Linguini } from 'linguini';
+import { Translations } from './types/translations';
+
+const linguini = new Linguini<Translations>('./lang');
+
+// ✅ Autocomplete works - shows all valid keys
+linguini.t('prompts.greeting', 'en-US');
+
+// ✅ Type inference - return type is correctly inferred
+const title = linguini.t('info.about.title', 'en-US'); // type: string
+
+// ❌ Compile error - invalid key caught before runtime!
+linguini.t('prompts.greetng', 'en-US'); // Typo caught!
+linguini.t('invalid.path', 'en-US');     // Invalid key caught!
+```
+
+### CLI Options
+
+```bash
+linguini generate <langDir> [options]
+
+Arguments:
+  langDir              Path to the language files directory
+
+Options:
+  --output, -o         Output file path (default: ./linguini.generated.ts)
+  --type-name, -t      Name of the generated type (default: Translations)
+  --help, -h           Show help message
+
+Examples:
+  linguini generate ./lang
+  linguini generate ./lang --output ./src/types/translations.ts
+  linguini generate ./lang -o ./types.ts -t MyTranslations
+```
+
+**Pro tip:** Add type generation to your build process:
 
 ```json
+// package.json
 {
-    "data": {
-        "superheroes": {
-            "batman": { "firstName": "Bruce", "lastName": "Wayne" },
-            "superman": { "firstName": "Clark", "lastName": "Kent" }
-        }
-    },
-    "refs": {}
+    "scripts": {
+        "generate:types": "linguini generate ./lang -o ./src/types/translations.ts",
+        "build": "npm run generate:types && tsc"
+    }
 }
+```
+
+## API Reference
+
+### t() - Get Translation
+
+Get a translation by key with variable replacement.
+
+```typescript
+linguini.t(key: string, locale: string, variables?: Variables): T
+```
+
+**Parameters:**
+- `key` - The translation key in dot-notation (e.g., `'prompts.greeting'`)
+- `locale` - The locale code (e.g., `'en-US'`)
+- `variables` - Optional object with variables to replace
+
+**Example:**
+
+```typescript
+// Simple translation
+const msg = linguini.t('prompts.greeting', 'en-US');
+
+// With variables
+const msg = linguini.t('prompts.greeting', 'en-US', {
+    NAME: 'Alice',
+    COUNT: 5
+});
+```
+
+### ref() - Get Reference
+
+Get a reference string (translated reusable phrase).
+
+```typescript
+linguini.ref(key: string, locale: string, variables?: Variables): string
+```
+
+**Example:**
+
+```typescript
+const term = linguini.ref('terms.birthday', 'en-US');
+// → "birthday"
+
+const term = linguini.ref('terms.birthday', 'es-MX');
+// → "cumpleaños"
+```
+
+### common() - Get Common Value
+
+Get a common value (language-agnostic constant).
+
+```typescript
+linguini.common(key: string, variables?: Variables): string
+```
+
+**Example:**
+
+```typescript
+const color = linguini.common('colors.primary');
+// → "#FF5733"
+
+const link = linguini.common('links.github');
+// → "https://github.com/KevinNovak"
+```
+
+### Utility Methods
+
+```typescript
+// Get all available locales
+linguini.getLocales(): string[]
+// → ['en-US', 'es-MX', 'fr-FR']
+
+// Check if a locale is available
+linguini.hasLocale('en-US'): boolean
+// → true
+
+// Check if a translation key exists
+linguini.has('prompts.greeting', 'en-US'): boolean
+// → true
 ```
 
 ## Variables
 
-Variables allow you to dynamically pass in values to your language items. A variable can be defined in a language file using double curly braces like so: `{{MY_VARIABLE}}`.
-
-Here is a full example:
+Variables allow you to dynamically pass in values to your translations. Use double curly braces: `{{VARIABLE_NAME}}`.
 
 ```json
+// lang/en-US/prompts.json
 {
-    "data": {
-        "intro": {
-            "welcome": "Welcome {{FIRST_NAME}} {{LAST_NAME}} to our club!"
-        }
-    },
-    "refs": {}
+    "welcome": "Welcome {{FIRST_NAME}} {{LAST_NAME}} to our club!",
+    "items": "You have {{COUNT}} items in your cart."
 }
 ```
 
-Then in our code, we can pass in values for the variables like so:
-
-```js
-let welcomeLine = linguini.get('intro.welcome', 'en', TypeMappers.String, {
+```typescript
+const msg = linguini.t('prompts.welcome', 'en-US', {
     FIRST_NAME: 'Harley',
     LAST_NAME: 'Quinn',
 });
-console.log(welcomeLine);
-// Outputs: "Welcome Harley Quinn to our club!"
+// → "Welcome Harley Quinn to our club!"
+
+const msg = linguini.t('prompts.items', 'en-US', { COUNT: 5 });
+// → "You have 5 items in your cart."
 ```
 
 ## References
 
-If you find yourself repeating the same word or phrase over and over in a language file, then references will be your best friend! You can define a commonly used word/phrase once, and then reference it anywhere you need it!
+References let you define commonly used words or phrases once and reuse them throughout your translations.
 
 ### General References (REF)
 
-General references are defined in a language file using double curly braces with a `REF:` prefix like so: `{{REF:myCategory.myItem}}`, and are used to point to an item in the `"refs"` section of the language file.
+**References are locale-specific translated phrases.** Use them for terms that need to be translated but are used in multiple places.
 
-Here is an example:
+Define references in `_refs.json` (locale-folder) or `_refs.{locale}.json` (locale-in-filename):
 
-```jsonc
+```json
+// lang/en-US/_refs.json
 {
-    "data": {
-        "intro": {
-            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
-            "yourFavoriteColor": "Is your favorite color {{REF:aboutMe.favoriteColor}} too?"
-        }
+    "terms": {
+        "birthday": "birthday",
+        "anniversary": "anniversary"
     },
-    "refs": {
-        // This is a general reference category:
-        "aboutMe": {
-            // This is a general reference item:
-            "favoriteColor": "purple"
-        }
+    "phrases": {
+        "thankYou": "Thank you for using our service!"
     }
 }
 ```
 
-And in the code:
-
-```js
-let myFavoriteColor = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
-console.log(myFavoriteColor);
-// Outputs: "My favorite color is purple!"
-
-let yourFavoriteColor = linguini.get('intro.yourFavoriteColor', 'en', TypeMappers.String);
-console.log(yourFavoriteColor);
-// Outputs: "Is your favorite color purple too?"
-```
-
-You can also retrieve a reference directly by using `Linguini#getRef()`.
-
-### Common References (COM)
-
-Common References are handy when you want to use the same word/phrase across _multiple_ language files. For example, links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
-
-To use Common References, create a file that matches your language file names, but use `common` as the language code. For example: `lang.common.json`.
-
-In the common language file, you can define references like so:
-
-```jsonc
+```json
+// lang/es-MX/_refs.json
 {
-    // This is a common reference category:
-    "links": {
-        // This is a common reference item:
-        "github": "https://github.com/KevinNovak"
+    "terms": {
+        "birthday": "cumpleaños",
+        "anniversary": "aniversario"
+    },
+    "phrases": {
+        "thankYou": "¡Gracias por usar nuestro servicio!"
     }
 }
 ```
 
-Then in _any language file_, you can refer to a common reference by using using double curly braces with a `COM:` prefix like so: `{{COM:myCategory.myItem}}`.
-
-So continuing with the above common file example, we can use this link in another language file like so:
+Use them in translations with `{{REF:category.item}}`:
 
 ```json
 {
-    "data": {
-        "aboutMe": {
-            "myGitHub": "Follow me on GitHub at {{COM:links.github}}!"
-        }
-    },
-    "refs": {}
+    "greeting": "Happy {{REF:terms.birthday}}, {{NAME}}!",
+    "farewell": "{{REF:phrases.thankYou}}"
 }
 ```
 
-And in the code:
+```typescript
+linguini.t('prompts.greeting', 'en-US', { NAME: 'Alice' });
+// → "Happy birthday, Alice!"
 
-```js
-let myGitHub = linguini.get('aboutMe.myGitHub', 'en', TypeMappers.String);
-console.log(myGitHub);
-// Outputs: "Follow me on GitHub at https://github.com/KevinNovak!"
+linguini.t('prompts.greeting', 'es-MX', { NAME: 'Alice' });
+// → "Happy cumpleaños, Alice!"
 ```
 
-You can also retrieve a common reference directly by using `Linguini#getCom()`.
+### Common References (COM)
+
+**Common references are language-agnostic constants.** Use them for values that stay the same across all languages: colors, links, emojis, numbers, etc.
+
+Define in `_common.json`:
+
+```json
+// lang/_common.json
+{
+    "colors": {
+        "primary": "#FF5733",
+        "success": "#2ECC71"
+    },
+    "links": {
+        "github": "https://github.com/KevinNovak",
+        "docs": "https://docs.example.com"
+    },
+    "emojis": {
+        "cake": "🎂",
+        "party": "🎉"
+    }
+}
+```
+
+Use them in translations with `{{COM:category.item}}`:
+
+```json
+{
+    "colorInfo": "Your theme color is {{COM:colors.primary}}",
+    "birthday": "Happy Birthday! {{COM:emojis.cake}}"
+}
+```
+
+```typescript
+linguini.t('prompts.colorInfo', 'en-US');
+// → "Your theme color is #FF5733"
+
+linguini.common('links.github');
+// → "https://github.com/KevinNovak"
+```
+
+## Legacy API
+
+The v1 API is still available but deprecated. It will continue to work but shows deprecation warnings.
+
+```typescript
+// Legacy constructor
+const linguini = new Linguini(folderPath, fileName);
+
+// Legacy methods (deprecated)
+linguini.get(location, langCode, typeMapper, variables);  // Use t() instead
+linguini.getRaw(location, langCode, variables);           // Use t() instead
+linguini.getRef(location, langCode, variables);           // Use ref() instead
+linguini.getCom(location, variables);                     // Use common() instead
+```
+
+### Type Mappers (Legacy)
+
+Type Mappers were used in v1 to convert JSON values to specific types. With TypeScript generics in v2, these are less necessary but still available:
+
+```typescript
+import { TypeMappers } from 'linguini';
+
+// Built-in Type Mappers
+TypeMappers.String   // Join arrays with newlines
+TypeMappers.Boolean
+TypeMappers.Number
+TypeMappers.BigInt
+TypeMappers.Date
+TypeMappers.RegExp
+TypeMappers.URL
+
+// Usage (legacy)
+const regex = linguini.get('regexes.hello', 'en', TypeMappers.RegExp);
+```
+
+## Migration Guide
+
+### From v1 to v2
+
+**1. Update constructor call:**
+
+```typescript
+// v1
+const linguini = new Linguini(folderPath, fileName);
+
+// v2
+const linguini = new Linguini(rootPath);
+```
+
+**2. Update method calls:**
+
+```typescript
+// v1
+linguini.get('intro.greeting', 'en', TypeMappers.String, { NAME: 'Alice' });
+linguini.getRef('terms.birthday', 'en');
+linguini.getCom('links.github');
+
+// v2
+linguini.t('intro.greeting', 'en', { NAME: 'Alice' });
+linguini.ref('terms.birthday', 'en');
+linguini.common('links.github');
+```
+
+**3. Add type safety (optional but recommended):**
+
+```bash
+npx linguini generate ./lang -o ./src/types/translations.ts
+```
+
+```typescript
+import { Translations } from './types/translations';
+
+const linguini = new Linguini<Translations>('./lang');
+```
+
+**4. Reorganize files (optional):**
+
+You can keep your existing file structure or migrate to locale-folder structure:
+
+```
+# Before (v1)
+lang/
+├── lang.common.json
+├── lang.en.json
+└── lang.fr.json
+
+# After (v2 locale-folder)
+lang/
+├── _common.json
+├── en/
+│   ├── _refs.json
+│   └── prompts.json
+└── fr/
+    ├── _refs.json
+    └── prompts.json
+```
+
+## License
+
+MIT

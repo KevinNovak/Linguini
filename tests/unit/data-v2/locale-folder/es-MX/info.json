@@ -1,0 +1,11 @@
+{
+    "about": {
+        "title": "Sobre Nosotros",
+        "description": "¡Hacemos gran software!"
+    },
+    "contact": {
+        "email": "Contáctenos en support@example.com",
+        "github": "Encuéntrenos en GitHub: {{COM:links.github}}"
+    }
+}
+

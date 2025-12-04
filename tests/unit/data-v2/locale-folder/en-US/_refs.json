@@ -1,0 +1,12 @@
+{
+    "terms": {
+        "birthday": "birthday",
+        "anniversary": "anniversary",
+        "celebration": "celebration"
+    },
+    "phrases": {
+        "thankYou": "Thank you for using our service!",
+        "welcome": "Welcome to the app!"
+    }
+}
+

@@ -1,0 +1,10 @@
+{
+    "required": "Este campo es obligatorio",
+    "minLength": "Debe tener al menos {{MIN}} caracteres",
+    "maxLength": "Debe tener como máximo {{MAX}} caracteres",
+    "email": "Por favor ingrese un correo electrónico válido",
+    "custom": {
+        "birthday": "Por favor ingrese una fecha de {{REF:terms.birthday}} válida"
+    }
+}
+

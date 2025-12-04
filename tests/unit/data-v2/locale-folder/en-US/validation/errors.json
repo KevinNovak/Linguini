@@ -1,0 +1,10 @@
+{
+    "required": "This field is required",
+    "minLength": "Must be at least {{MIN}} characters",
+    "maxLength": "Must be at most {{MAX}} characters",
+    "email": "Please enter a valid email address",
+    "custom": {
+        "birthday": "Please enter a valid {{REF:terms.birthday}} date"
+    }
+}
+

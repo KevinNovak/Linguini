@@ -1,0 +1,5 @@
+{
+    "required": "This field is required",
+    "minLength": "Must be at least {{MIN}} characters"
+}
+

@@ -1,0 +1,2 @@
+export * from './file-loader';
+

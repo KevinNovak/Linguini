@@ -1,0 +1,17 @@
+{
+    "colors": {
+        "primary": "#FF5733",
+        "secondary": "#3498DB",
+        "success": "#2ECC71"
+    },
+    "links": {
+        "github": "https://github.com/KevinNovak",
+        "docs": "https://docs.example.com"
+    },
+    "emojis": {
+        "cake": "🎂",
+        "party": "🎉",
+        "heart": "❤️"
+    }
+}
+

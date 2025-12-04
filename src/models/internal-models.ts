@@ -1,12 +1,5 @@
-export type LangFile = {
-    data: CategoryItems<any>;
-    refs: CategoryItems<string | string[]>;
-};
-
-export type CommonFile = CategoryItems<string | string[]>;
-
-export interface CategoryItems<T> {
-    [categoryName: string]: { [itemName: string]: T };
-}
-
-export type TypeMapper<T> = (jsonValue: any) => T;
+/**
+ * @deprecated Import from 'linguini' or './models/types' instead.
+ * This file is kept for backward compatibility.
+ */
+export { CategoryItems, CommonFile, LangFile, TypeMapper } from './types';

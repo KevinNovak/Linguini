@@ -1,0 +1,6 @@
+{
+    "greeting": "Happy {{REF:terms.birthday}}, {{NAME}}! {{COM:emojis.cake}}",
+    "farewell": "Goodbye, {{NAME}}! {{REF:phrases.thankYou}}",
+    "colorInfo": "Your theme color is {{COM:colors.primary}}"
+}
+
