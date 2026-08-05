@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Artifact } from '../src/artifact.js';
 import { compileCatalog } from '../src/compiler/compile.js';
+import { bindLocale } from '../src/runtime/bind-locale.js';
 import { Linguini, MissingKeyPolicy } from '../src/runtime/linguini.js';
 import { basicCatalog, writeCatalog } from './helpers.js';
 
@@ -172,6 +173,26 @@ describe('Linguini runtime', () => {
         expect(lx.manifest.baseLocale).toBe('en-US');
         expect(lx.com('links.docs')).toBe('https://example.com/docs');
         expect(() => lx.com('nope.nothing')).toThrow(/Unknown common path/);
+    });
+
+    it('bindLocale pre-applies the locale across arbitrarily nested trees', async () => {
+        const lx = new Linguini();
+        await lx.load(compiled());
+        const t = {
+            info: {
+                greeting: (locale: string, params: { name: string }) =>
+                    lx.format('info.greeting', locale, params) as string,
+                deep: {
+                    noParams: (locale: string) => lx.format('info.noParams', locale) as string,
+                },
+            },
+        };
+        const tl = bindLocale(t, 'de');
+        expect(tl.info.greeting({ name: 'Ada' })).toBe('Hallo, Ada!');
+        expect(tl.info.deep.noParams()).toBe('Just text.');
+
+        // The bound view is a view — the original tree still takes locales.
+        expect(t.info.greeting('en-US', { name: 'Ada' })).toBe('Hello, Ada!');
     });
 
     it('honors custom fallbackLocales', async () => {

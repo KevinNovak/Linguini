@@ -17,6 +17,8 @@ export {
     StructuredNodeKind,
 } from './artifact.js';
 export { LinguiniError } from './errors.js';
+export { bindLocale } from './runtime/bind-locale.js';
+export type { LocaleBound } from './runtime/bind-locale.js';
 export { evaluateMessage } from './runtime/evaluate.js';
 export type { MessageParams } from './runtime/evaluate.js';
 export { Linguini, MissingKeyPolicy } from './runtime/linguini.js';

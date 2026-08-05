@@ -309,6 +309,6 @@ What v2 ships instead of compatibility:
 ## 13. Open questions
 
 1. **`.ts` config support at launch, or JSON-only first?** (Lean: JSON first; `.ts` config needs a loader story.)
-2. **`list` type syntax** — `{names, list}` as an ICU extension vs. requiring pre-formatted strings. (Lean: support it; it's a small evaluator addition and `Intl.ListFormat` is the whole point.)
+2. **`list` type syntax** — `{names, list}` as an ICU extension vs. requiring pre-formatted strings. (Resolved: supported, backed by `Intl.ListFormat`.)
 3. **Weighted variants** (`$variants` with weights) — v2.0 or later? (Lean: later; keep 2.0 surface small.)
-4. Name for the generated accessor tree (`createMessages` vs `createT` vs …) — bikeshed with Kevin.
+4. ~~Name for the generated accessor tree~~ **Resolved:** factory is `createMessages(lx)`, the conventional tree variable is `t`, and core ships `bindLocale(t, locale)` — a typed locale-bound view (`LocaleBound<T>` strips each accessor's leading locale parameter) so consumers resolve the locale once per interaction: `tl.info.greeting({ name })`. The unbound tree remains for registration metadata, `formatAll`, and cross-locale formatting.

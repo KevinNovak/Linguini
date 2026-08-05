@@ -86,6 +86,15 @@ t.info.birthdayCount('de', { count: 3 }); // typed: count must be a number
 t.info.greting; // ✗ compile error — key doesn't exist
 ```
 
+Resolve the locale once and bind it, instead of threading it through every call:
+
+```ts
+import { bindLocale } from 'linguini';
+
+const tl = bindLocale(t, userLocale);
+tl.info.greeting({ name: 'Ada' }); // locale is pre-applied; params stay fully typed
+```
+
 ## Message values
 
 | Shape                      | Meaning                                                            |

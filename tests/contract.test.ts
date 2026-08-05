@@ -26,12 +26,24 @@ const EMBED_TYPES = `export type LangEmbed = {
 
 // Every @ts-expect-error line asserts a rejection: if the call were accepted, tsc would fail
 // with "Unused '@ts-expect-error' directive".
-const CONSUMER = `import { Linguini } from '../../src/index.js';
+const CONSUMER = `import { bindLocale, Linguini } from '../../src/index.js';
 import { createMessages } from './messages.js';
 
 export function use(lx: Linguini): string {
     const t = createMessages(lx);
     const greeting: string = t.info.greeting('en-US', { name: 'Ada' });
+
+    const tl = bindLocale(t, 'en-US');
+    const bound: string = tl.info.greeting({ name: 'Ada' });
+    tl.info.noParams();
+    const boundEmbed = tl.info.embed({ name: 'Ada', count: 1 });
+    const boundTitle: string = boundEmbed.title;
+    void bound;
+    void boundTitle;
+    // @ts-expect-error locale is already bound
+    tl.info.greeting('en-US', { name: 'Ada' });
+    // @ts-expect-error params are still typed on the bound view
+    tl.info.birthdayCount({ count: 'three' });
     t.info.birthdayCount('en-US', { count: 3 });
     t.info.gender('en-US', { subject: 'female' });
     t.info.noParams('en-US');
@@ -115,5 +127,12 @@ describe('bindings contract', () => {
         const embed = t.info.embed('en-US', { name: 'Ada', count: 2 });
         expect(embed.title).toBe('About TestBot');
         expect(embed.fields[0].value).toBe('2');
+
+        const { bindLocale } = await import('../src/index.js');
+        const tl = bindLocale(t, 'de') as any;
+        expect(tl.info.greeting({ name: 'Ada' })).toBe('Hallo, Ada!');
+        expect(tl.info.birthdayCount({ count: 3 })).toBe('3 Geburtstage');
+        // Missing keys in de fall back through the chain, same as the unbound tree.
+        expect(tl.info.noParams()).toBe('Just text.');
     });
 });
