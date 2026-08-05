@@ -91,6 +91,31 @@ describe('migrateCatalog', () => {
         expect(report.escapedValues).toContain('info.braces');
     });
 
+    it('does not tag categories whose children merely have embed-ish names', async () => {
+        const input = writeCatalog({
+            'info/info.en-US.json': {
+                data: {
+                    customMessage: {
+                        // A category: `title`/`color` are prompt subtrees (objects), plus a
+                        // non-embed `embed` child — must NOT be swallowed as one embed.
+                        embed: { title: 'Preview', description: 'Shown as embed' },
+                        title: { prompt: 'Enter a title' },
+                        color: { prompt: 'Enter a color' },
+                    },
+                },
+            },
+        });
+        const out = mkdtempSync(path.join(tmpdir(), 'linguini-mistag-'));
+        const report = await migrateCatalog(input, { out, objectType: 'embed' });
+        expect(report.compile.errors).toBe(0);
+        expect(report.verify.mismatches).toEqual([]);
+        // Only the genuine embed child is tagged; the category and prompt subtrees walk normally.
+        expect(report.taggedObjects).toEqual(['info.customMessage.embed']);
+        const info = JSON.parse(readFileSync(path.join(out, 'info', 'info.en-US.json'), 'utf8'));
+        expect(info.data.customMessage.embed.$type).toBe('embed');
+        expect(info.data.customMessage.title).toEqual({ prompt: 'Enter a title' });
+    });
+
     it('tags embed-shaped objects with $type and reports them', async () => {
         const { out, report } = await migrated();
         const info = JSON.parse(readFileSync(path.join(out, 'info', 'info.en-US.json'), 'utf8'));

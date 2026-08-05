@@ -301,8 +301,29 @@ function isStringArray(value: unknown): boolean {
     );
 }
 
+/**
+ * Embed-shaped means: at least one embed key, NO keys outside the embed vocabulary, and the
+ * string-like embed keys hold string/array content. A category whose children merely have
+ * embed-ish *names* (e.g. a `customMessage` category containing `title`/`color` prompt
+ * subtrees plus an `embed` child) must stay a category — tagging it would swallow its
+ * children into one structured value and break their runtime keys.
+ */
+const STRING_EMBED_KEYS = new Set(['title', 'description', 'url', 'color']);
+
 function looksStructured(value: object): boolean {
-    return Object.keys(value).some(key => EMBED_KEYS.has(key));
+    const entries = Object.entries(value);
+    if (!entries.some(([key]) => EMBED_KEYS.has(key))) {
+        return false;
+    }
+    return entries.every(([key, child]) => {
+        if (!EMBED_KEYS.has(key)) {
+            return false;
+        }
+        if (STRING_EMBED_KEYS.has(key)) {
+            return typeof child === 'string' || isStringArray(child);
+        }
+        return true;
+    });
 }
 
 /**
