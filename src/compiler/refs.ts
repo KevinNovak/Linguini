@@ -166,6 +166,7 @@ export function expandIncludes(
 export function lintMidSentenceIncludes(
     text: string,
     level: LintLevel,
+    allow: string[],
     diagnostics: Diagnostics,
     where: { file?: string; key?: string }
 ): void {
@@ -173,6 +174,14 @@ export function lintMidSentenceIncludes(
         return;
     }
     for (const match of text.matchAll(INCLUDE_TOKEN_REGEX)) {
+        const tokenPath = match[2]!.trim();
+        if (
+            allow.some(entry =>
+                entry.endsWith('.') ? tokenPath.startsWith(entry) : tokenPath === entry
+            )
+        ) {
+            continue;
+        }
         const before = text[match.index - 1];
         const after = text[match.index + match[0].length];
         const touchesBefore = before !== undefined && !/\s/.test(before);

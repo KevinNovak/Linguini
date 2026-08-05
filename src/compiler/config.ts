@@ -30,6 +30,12 @@ export type LinguiniConfig = {
     lint: {
         /** A ref/com token with non-whitespace directly on both sides. */
         midSentenceRef: LintLevel;
+        /**
+         * Ref/com paths exempt from the midSentenceRef lint — adjudicated-benign splices
+         * (markdown link URLs, noun tables). An entry ending in `.` matches the whole family
+         * (`"links."`); otherwise it matches the exact path.
+         */
+        midSentenceRefAllow: string[];
         /** Message parameter names should be camelCase. */
         argCase: LintLevel;
         /** Empty message values. */
@@ -46,6 +52,7 @@ const DEFAULTS: Omit<LinguiniConfig, 'baseLocale'> = {
     out: 'dist',
     lint: {
         midSentenceRef: LintLevel.WARN,
+        midSentenceRefAllow: [],
         argCase: LintLevel.WARN,
         emptyMessage: LintLevel.WARN,
     },
@@ -71,8 +78,16 @@ export function resolveConfig(raw: any, source = 'config'): LinguiniConfig {
         throw new LinguiniError(`${source}: "baseLocale" is required`);
     }
     const lint = { ...DEFAULTS.lint, ...raw.lint };
-    for (const [rule, level] of Object.entries(lint)) {
-        if (!Object.values(LintLevel).includes(level as LintLevel)) {
+    for (const [rule, value] of Object.entries(lint)) {
+        if (rule === 'midSentenceRefAllow') {
+            if (!Array.isArray(value) || value.some(entry => typeof entry !== 'string')) {
+                throw new LinguiniError(
+                    `${source}: lint.midSentenceRefAllow must be a string array`
+                );
+            }
+            continue;
+        }
+        if (!Object.values(LintLevel).includes(value as LintLevel)) {
             throw new LinguiniError(`${source}: lint.${rule} must be one of: off, warn, error`);
         }
     }

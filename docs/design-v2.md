@@ -133,7 +133,7 @@ Rules:
 
 - Refs may reference other refs/coms; expansion resolves recursively with cycle detection (compile error on cycle — v1 silently left unresolved text).
 - Refs may declare ICU arguments; those become part of the including message's parameter set.
-- **Lint: mid-sentence refs.** A ref expanded into the middle of a sentence (non-whitespace on both sides of the token, heuristically) produces a lint warning. Fragments spliced mid-sentence break case/gender agreement in many languages; refs are for whole reusable segments (footers, links, full sentences). Warning by default, escalatable to error in config.
+- **Lint: mid-sentence refs.** A ref expanded into the middle of a sentence (non-whitespace on both sides of the token, heuristically) produces a lint warning. Fragments spliced mid-sentence break case/gender agreement in many languages; refs are for whole reusable segments (footers, links, full sentences). Warning by default, escalatable to error in config. The heuristic also fires on benign formatting-adjacent splices (markdown `[text]({{COM:links.x}})` URLs, `**{{REF:noun}}**` tables) — adjudicate those once via `lint.midSentenceRefAllow` (exact paths, or `.`-suffixed family prefixes), so remaining warnings always mean unreviewed splices.
 
 Expansion happens at compile time; the artifact contains fully-resolved messages. Runtime never sees `{{REF:}}`/`{{COM:}}`.
 

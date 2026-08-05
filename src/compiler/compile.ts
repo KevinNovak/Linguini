@@ -586,7 +586,13 @@ function compileTextLeaf(
         );
     }
 
-    lintMidSentenceIncludes(text, ctx.config.lint.midSentenceRef, ctx.diagnostics, where);
+    lintMidSentenceIncludes(
+        text,
+        ctx.config.lint.midSentenceRef,
+        ctx.config.lint.midSentenceRefAllow,
+        ctx.diagnostics,
+        where
+    );
 
     const expanded = expandIncludes(text, (kind, includePath) => {
         const value =

@@ -14,11 +14,18 @@ describe('config', () => {
             bindings: undefined,
             lint: {
                 midSentenceRef: LintLevel.WARN,
+                midSentenceRefAllow: [],
                 argCase: LintLevel.WARN,
                 emptyMessage: LintLevel.WARN,
             },
             missingKeys: LintLevel.WARN,
         });
+    });
+
+    it('rejects non-array midSentenceRefAllow', () => {
+        expect(() =>
+            resolveConfig({ baseLocale: 'en-US', lint: { midSentenceRefAllow: 'links.' } })
+        ).toThrow(/midSentenceRefAllow/);
     });
 
     it('requires baseLocale', () => {

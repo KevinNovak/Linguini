@@ -447,6 +447,33 @@ describe('compileCatalog', () => {
         expect(codes(result)).toContain(DiagnosticCode.INVALID_REF_VALUE);
     });
 
+    it('midSentenceRefAllow exempts exact paths and dot-suffixed families', () => {
+        const result = compileCatalog(
+            writeCatalog({
+                'linguini.config.json': {
+                    baseLocale: 'en-US',
+                    lint: { midSentenceRefAllow: ['links.', 'words.exact'] },
+                },
+                'common.json': {
+                    links: { docs: 'https://example.com' },
+                    words: { exact: 'birthday', other: 'gift' },
+                },
+                'info/info.en-US.json': {
+                    data: {
+                        allowedFamily: 'See [docs]({{COM:links.docs}}).',
+                        allowedExact: 'Your{{COM:words.exact}}is today',
+                        stillFlagged: 'Your{{COM:words.other}}is here',
+                    },
+                },
+            })
+        );
+        const midSentence = result.diagnostics.warnings.filter(
+            d => d.code === DiagnosticCode.MID_SENTENCE_REF
+        );
+        expect(midSentence).toHaveLength(1);
+        expect(midSentence[0]!.key).toBe('info.stillFlagged');
+    });
+
     it('midSentenceRef lint can be turned off', () => {
         const result = compileCatalog(
             writeCatalog({
