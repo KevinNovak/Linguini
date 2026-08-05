@@ -6,259 +6,156 @@
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://opensource.org/licenses/MIT)
 [![Pull Requests](https://img.shields.io/badge/Pull%20Requests-Welcome!-brightgreen)](https://github.com/KevinNovak/Linguini/pulls)
 
-**Npm package** - A JSON-based translation file manager.
+Typed, ICU-based JSON translation catalogs: compile-time checked keys and parameters, CLDR
+plurals, `Intl` formatting, and hot-reloadable catalog artifacts.
 
 `npm install linguini`
 
-## Table of Contents
+> **v2 is a clean break from v1.** The authoring format moved to ICU MessageFormat, the runtime
+> is typed via generated bindings, and catalogs compile to versioned artifacts. v1 docs live on
+> the `v1` branch. See [`docs/design-v2.md`](docs/design-v2.md) for the full design.
 
--   [Example](#example)
--   [Initial Setup](#initial-setup)
-    -   [Installation](#installation)
-    -   [Creating a Linguini Object](#creating-a-linguini-object)
--   [Type Mappers](#type-mappers)
-    -   [Built-In Type Mappers](#built-in-type-mappers)
-    -   [Custom Type Mappers](#custom-type-mappers)
--   [Variables](#variables)
--   [References](#references)
-    -   [General References (REF)](#general-references-ref)
-    -   [Common References (COM)](#common-references-com)
+## How it works
 
-## Example
+```
+catalog/ (JSON you author)  →  linguini compile  →  artifact (data)  +  typed bindings (code)
+```
 
-An example language file, `lang.en.json`:
+1. You author messages in JSON files, per namespace and locale.
+2. `linguini compile` validates everything (ICU syntax, plural coverage per locale, refs,
+   translations against the base locale), precompiles messages, and emits:
+    - an **artifact** — the content, loadable and hot-swappable at runtime;
+    - **typed bindings** — a generated module giving every message a typed accessor.
+3. At runtime, `Linguini` loads the artifact and your code calls typed functions. A
+   **schemaHash** ties the two together: content edits hot-reload freely; shape changes (new
+   keys or parameters) require regenerated bindings, which is a normal reviewable code change.
 
-```jsonc
+## Quick start
+
+Catalog layout:
+
+```
+catalog/
+  linguini.config.json
+  common.json                 ← shared, locale-independent values
+  info/
+    info.en-US.json
+    info.de.json
+```
+
+`linguini.config.json`:
+
+```json
 {
-    "data": {
-        // This is a language category:
-        "intro": {
-            // This is a language item:
-            "myFavoriteColor": "My favorite color is blue."
-        }
-    },
-    "refs": {}
+    "baseLocale": "en-US",
+    "out": "dist",
+    "bindings": { "out": "../src/generated/messages.ts" }
 }
 ```
 
-We could have additional translations of this file, for example: `lang.fr.json`, `lang.ru.json`, etc:
-
-![](https://i.imgur.com/l3CMVe8.png)
-
-Using Linguini, we can retrieve the language item from the appropriate file by passing in the location of the item, and the language code to use:
-
-```js
-let englishLine = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
-console.log(englishLine);
-// Outputs: "My favorite color is blue."
-
-let frenchLine = linguini.get('intro.myFavoriteColor', 'fr', TypeMappers.String);
-console.log(frenchLine);
-// Outputs: "Ma couleur préférée est le bleu."
-```
-
-Here `'intro.myFavoriteColor'` is the category and name of the language item, while `'en'` or `'fr'` tells Linguini which language file to pull from: either `lang.en.json` or `lang.fr.json`.
-
-_Side note: If you're wondering what the `TypeMappers.String` is for, see the section below on [Type Mappers](#type-mappers)._
-
-## Initial Setup
-
-### Installation
-
-`npm install linguini`
-
-### Creating a Linguini Object
-
-```js
-import { Linguini } from 'linguini';
-
-// The folder path containing the language files.
-let folderPath = path.join(__dirname, './data');
-
-// The base name of the language files to use. Note this should not include any file extensions or language codes.
-let fileName = 'lang';
-
-let linguini = new Linguini(folderPath, fileName);
-```
-
-## Type Mappers
-
-Type Mappers are a special kind of function which allow Linguini to convert the JSON language item that was retrieved from the language file into any type of your choice.
-
-### Built-In Type Mappers
-
-Linguini has many built-in Type Mappers which can be used inside the `Linguini#get()` method to retrieve language item values as specific types.
-
-Linguini's built-in Type Mappers:
-
--   `String`
--   `Boolean`
--   `Number`
--   `BigInt`
--   `Date`
--   `RegExp`
--   `URL`
-
-For example, let's say you want Linguini to retrieve, not just a plain string, but a [RegExp](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) object. Linguini has a built-in Type Mapper to convert a JSON language item into a `RegExp`.
-
-Simply import and use `TypeMappers.RegExp` inside the `Linguini#get()` method:
-
-```js
-import { TypeMappers } from 'linguini';
-
-// ...
-
-let regex = linguini.get('regexes.hello', 'en', TypeMappers.RegExp);
-```
-
-And in our language file:
+`info/info.en-US.json`:
 
 ```json
 {
     "data": {
-        "regexes": {
-            "hello": { "pattern": "hello", "flags": "i" }
-        }
-    },
-    "refs": {}
-}
-```
-
-Notice how this language item is not just a string, but has 2 properties: `pattern` and `flags`. Using Type Mappers allows Linguini to convert just about any JSON data into any type you wish.
-
-### Custom Type Mappers
-
-If Linguini doesn't have a built-in Type Mapper that suits your needs, you can always create you own. A Type Mapper is simply a function that takes the JSON language item and returns the mapped type.
-
-For example, we can create `Person` Type Mapper, `personTm`:
-
-```js
-let personTm = jsonValue => new Person(jsonValue.firstName, jsonValue.lastName);
-```
-
-And in our language file, we can define `Person` objects like so:
-
-```json
-{
-    "data": {
-        "superheroes": {
-            "batman": { "firstName": "Bruce", "lastName": "Wayne" },
-            "superman": { "firstName": "Clark", "lastName": "Kent" }
-        }
-    },
-    "refs": {}
-}
-```
-
-## Variables
-
-Variables allow you to dynamically pass in values to your language items. A variable can be defined in a language file using double curly braces like so: `{{MY_VARIABLE}}`.
-
-Here is a full example:
-
-```json
-{
-    "data": {
-        "intro": {
-            "welcome": "Welcome {{FIRST_NAME}} {{LAST_NAME}} to our club!"
-        }
-    },
-    "refs": {}
-}
-```
-
-Then in our code, we can pass in values for the variables like so:
-
-```js
-let welcomeLine = linguini.get('intro.welcome', 'en', TypeMappers.String, {
-    FIRST_NAME: 'Harley',
-    LAST_NAME: 'Quinn',
-});
-console.log(welcomeLine);
-// Outputs: "Welcome Harley Quinn to our club!"
-```
-
-## References
-
-If you find yourself repeating the same word or phrase over and over in a language file, then references will be your best friend! You can define a commonly used word/phrase once, and then reference it anywhere you need it!
-
-### General References (REF)
-
-General references are defined in a language file using double curly braces with a `REF:` prefix like so: `{{REF:myCategory.myItem}}`, and are used to point to an item in the `"refs"` section of the language file.
-
-Here is an example:
-
-```jsonc
-{
-    "data": {
-        "intro": {
-            "myFavoriteColor": "My favorite color is {{REF:aboutMe.favoriteColor}}.",
-            "yourFavoriteColor": "Is your favorite color {{REF:aboutMe.favoriteColor}} too?"
-        }
+        "greeting": "Hello, {name}!",
+        "birthdayCount": "{count, plural, one {# birthday today!} other {# birthdays today!}}",
+        "nextBirthday": "Next up: {user} on {when, date, medium}",
+        "attendees": "Celebrating with {names, list}",
+        "footer": "{{REF:footers.default}}"
     },
     "refs": {
-        // This is a general reference category:
-        "aboutMe": {
-            // This is a general reference item:
-            "favoriteColor": "purple"
-        }
+        "footers": { "default": "Sent by MyBot — {{COM:links.docs}}" }
     }
 }
 ```
 
-And in the code:
+Compile, then use the generated bindings:
 
-```js
-let myFavoriteColor = linguini.get('intro.myFavoriteColor', 'en', TypeMappers.String);
-console.log(myFavoriteColor);
-// Outputs: "My favorite color is purple!"
+```ts
+import { Linguini } from 'linguini';
+import { createMessages, schemaHash } from './generated/messages.js';
 
-let yourFavoriteColor = linguini.get('intro.yourFavoriteColor', 'en', TypeMappers.String);
-console.log(yourFavoriteColor);
-// Outputs: "Is your favorite color purple too?"
+const lx = new Linguini({ schemaHash });
+await lx.load('./catalog/dist');
+const t = createMessages(lx);
+
+t.info.greeting('en-US', { name: 'Ada' }); // "Hello, Ada!"
+t.info.birthdayCount('de', { count: 3 }); // typed: count must be a number
+t.info.greting; // ✗ compile error — key doesn't exist
 ```
 
-You can also retrieve a reference directly by using `Linguini#getRef()`.
+## Message values
 
-### Common References (COM)
+| Shape                      | Meaning                                                            |
+| -------------------------- | ------------------------------------------------------------------ |
+| `"string"`                 | An ICU message.                                                    |
+| `["line", "line"]`         | Multi-line message (joined with `\n`).                             |
+| `{ "$variants": [...] }`   | Random variants (same parameters required; RNG is injectable).     |
+| `{ "$type": "name", ... }` | Structured message built by a registered type handler (see below). |
 
-Common References are handy when you want to use the same word/phrase across _multiple_ language files. For example, links are a good place to use Common References, since links are typically displayed alongside translated text, but often stay the same regardless of language.
+### ICU MessageFormat
 
-To use Common References, create a file that matches your language file names, but use `common` as the language code. For example: `lang.common.json`.
+Full argument syntax with `plural`, `selectordinal`, `select`, `number`, `date`, `time`, and a
+`list` extension backed by `Intl.ListFormat`. Plural categories are validated per locale
+against CLDR — a Polish file missing `few`/`many` fails compilation; an English file only
+needs `one`/`other`.
 
-In the common language file, you can define references like so:
+### Refs and common values
 
-```jsonc
-{
-    // This is a common reference category:
-    "links": {
-        // This is a common reference item:
-        "github": "https://github.com/KevinNovak"
-    }
-}
-```
+`{{REF:path}}` (per-locale, from the namespace's `refs` section) and `{{COM:path}}` (shared,
+from `common.json`) are compile-time includes: fully expanded during `linguini compile`, with
+cycle detection. A lint warns when an include is spliced mid-sentence, since fragments break
+word-form agreement in many languages.
 
-Then in _any language file_, you can refer to a common reference by using using double curly braces with a `COM:` prefix like so: `{{COM:myCategory.myItem}}`.
+### Structured messages
 
-So continuing with the above common file example, we can use this link in another language file like so:
+Register a handler to turn structured values into rich objects (a Discord embed, a
+notification payload, ...):
 
-```json
-{
-    "data": {
-        "aboutMe": {
-            "myGitHub": "Follow me on GitHub at {{COM:links.github}}!"
-        }
+```ts
+const lx = new Linguini({
+    types: {
+        embed: (value, ctx) => buildEmbed(value, ctx.com('colors.default')),
     },
-    "refs": {}
-}
+});
 ```
 
-And in the code:
+String leaves inside the value are ICU messages; the handler receives them fully evaluated.
+Map `$type` names to TypeScript types in the config (`bindings.types`) to type the accessor's
+return value.
 
-```js
-let myGitHub = linguini.get('aboutMe.myGitHub', 'en', TypeMappers.String);
-console.log(myGitHub);
-// Outputs: "Follow me on GitHub at https://github.com/KevinNovak!"
+## Runtime
+
+```ts
+const lx = new Linguini({
+    schemaHash, // reject artifacts compiled against a different schema
+    fallbackLocales: ['en-US'], // appended to every lookup chain (default: base locale)
+    missingKeys: 'throw', // or 'fallback'
+    onMissing: (key, locale) => metrics.count('lang.miss', { key, locale }),
+    onReloaded: () => {},
+    onRejected: error => alerting.warn(error),
+});
 ```
 
-You can also retrieve a common reference directly by using `Linguini#getCom()`.
+- Lookup falls back requested locale → BCP 47 truncation (`pt-BR` → `pt`) → `fallbackLocales`.
+- `lx.load()` validates and **atomically swaps** — a bad reload keeps the old catalog serving.
+- `lx.formatAll(key, params)` returns the message in every loaded locale (e.g. for Discord
+  `name_localizations`).
+- All `Intl` formatters are memoized per locale + options.
+
+## CLI
+
+```
+linguini compile [catalogDir]                    # write artifact + bindings
+linguini check [catalogDir] [--bindings <file>]  # validate; verify bindings schemaHash in CI
+linguini watch [catalogDir]                      # recompile on change (development)
+```
+
+`check --bindings` is the CI gate that distinguishes content-only changes (ship the artifact,
+hot-reload, no deploy) from schema changes (regenerate bindings, ship as code).
+
+## Requirements
+
+Node.js ≥ 20. ESM only. The runtime has zero dependencies; the compiler uses
+[`@formatjs/icu-messageformat-parser`](https://www.npmjs.com/package/@formatjs/icu-messageformat-parser).
