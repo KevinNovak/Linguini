@@ -96,6 +96,12 @@ export type ArtifactManifest = {
     formatVersion: number;
     /** Stable hash of the CatalogSchema — the code/content compatibility contract. */
     schemaHash: string;
+    /**
+     * Stable hash of the compiled catalog + common content. Two artifacts with equal
+     * contentHash render identically; sync tooling uses it as the artifact's version
+     * identity (dedupe, versioned storage paths, "what is live" logging).
+     */
+    contentHash: string;
     baseLocale: string;
     locales: string[];
     namespaces: string[];

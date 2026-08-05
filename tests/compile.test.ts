@@ -66,6 +66,24 @@ describe('compileCatalog', () => {
         expect(changed.artifact!.manifest.schemaHash).not.toBe(first.artifact!.manifest.schemaHash);
     });
 
+    it('produces a contentHash that tracks rendered content, not schema', () => {
+        const files = basicCatalog();
+        const first = compileCatalog(writeCatalog(files));
+        expect(first.artifact!.manifest.contentHash).toMatch(/^sha256:/);
+
+        // Identical input → identical contentHash (recompiles are deterministic).
+        const again = compileCatalog(writeCatalog(basicCatalog()));
+        expect(again.artifact!.manifest.contentHash).toBe(first.artifact!.manifest.contentHash);
+
+        // A content-only rewording keeps the schemaHash but must change the contentHash.
+        (files['info/info.en-US.json'] as any).data.greeting = 'Greetings, {name}!';
+        const reworded = compileCatalog(writeCatalog(files));
+        expect(reworded.artifact!.manifest.schemaHash).toBe(first.artifact!.manifest.schemaHash);
+        expect(reworded.artifact!.manifest.contentHash).not.toBe(
+            first.artifact!.manifest.contentHash
+        );
+    });
+
     it('errors on keys present only outside the base locale', () => {
         const files = basicCatalog();
         (files['info/info.de.json'] as any).data.deOnly = 'Nur hier';

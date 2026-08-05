@@ -147,7 +147,8 @@ function compile(catalogDir: string, log: Logger): number {
     log(
         `Compiled ${Object.keys(result.schema).length} messages, ` +
             `${result.artifact.manifest.locales.length} locale(s). ` +
-            `schemaHash ${result.artifact.manifest.schemaHash}`
+            `schemaHash ${result.artifact.manifest.schemaHash} ` +
+            `contentHash ${result.artifact.manifest.contentHash}`
     );
     return 0;
 }

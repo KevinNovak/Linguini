@@ -23,7 +23,7 @@ import {
     resolveIncludes,
     UNKNOWN_TOKEN_REGEX,
 } from './refs.js';
-import { canonicalStringify, hashSchema } from './schema.js';
+import { canonicalStringify, hashContent, hashSchema } from './schema.js';
 
 export type CompileResult = {
     diagnostics: Diagnostics;
@@ -252,17 +252,19 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
         return { diagnostics };
     }
 
+    const common = Object.fromEntries(comResolved);
     const artifact: Artifact = {
         manifest: {
             formatVersion: ARTIFACT_FORMAT_VERSION,
             schemaHash: hashSchema(schema),
+            contentHash: hashContent(catalog, common),
             baseLocale: config.baseLocale,
             locales: [...allLocales].sort(),
             namespaces,
             createdAt: new Date().toISOString(),
         },
         catalog,
-        common: Object.fromEntries(comResolved),
+        common,
     };
     return { diagnostics, artifact, schema };
 }
