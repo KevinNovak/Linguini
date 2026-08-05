@@ -22,6 +22,10 @@
         "./compiler": {
             "types": "./dist/compiler/index.d.ts",
             "import": "./dist/compiler/index.js"
+        },
+        "./migrate": {
+            "types": "./dist/migrate/index.d.ts",
+            "import": "./dist/migrate/index.js"
         }
     },
     "bin": {

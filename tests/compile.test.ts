@@ -605,6 +605,85 @@ describe('compileCatalog', () => {
     });
 });
 
+describe('shared refs (refs.<locale>.json)', () => {
+    function sharedCatalog(): { [relativePath: string]: unknown } {
+        return {
+            'linguini.config.json': { baseLocale: 'en-US' },
+            'common.json': { links: { docs: 'https://example.com/docs' } },
+            'refs.en-US.json': {
+                footers: { shared: 'Shared footer — {{COM:links.docs}}' },
+                words: { bot: 'the bot' },
+            },
+            'info/info.en-US.json': {
+                data: { a: '{{REF:footers.shared}}' },
+                refs: { local: { note: 'Ask {{REF:words.bot}}' } },
+            },
+            'errors/errors.en-US.json': {
+                data: { b: '{{REF:footers.shared}}', c: '{{REF:local.note}}' },
+                refs: { local: { note: 'Tell {{REF:words.bot}}' } },
+            },
+        };
+    }
+
+    it('resolves shared refs from any namespace, including from local refs', () => {
+        const result = compileCatalog(writeCatalog(sharedCatalog()));
+        expect(result.diagnostics.errors).toEqual([]);
+        const text = (key: string, locale = 'en-US'): string =>
+            (result.artifact!.catalog[locale]![key] as any).nodes[0].value;
+        expect(text('info.a')).toBe('Shared footer — https://example.com/docs');
+        expect(text('errors.b')).toBe('Shared footer — https://example.com/docs');
+        expect(text('errors.c')).toBe('Tell the bot');
+    });
+
+    it('lets namespace-local refs override shared refs', () => {
+        const files = sharedCatalog();
+        (files['info/info.en-US.json'] as any).refs.footers = { shared: 'Local override' };
+        const result = compileCatalog(writeCatalog(files));
+        expect(result.diagnostics.errors).toEqual([]);
+        expect((result.artifact!.catalog['en-US']!['info.a'] as any).nodes[0].value).toBe(
+            'Local override'
+        );
+        // Other namespaces still get the shared value.
+        expect((result.artifact!.catalog['en-US']!['errors.b'] as any).nodes[0].value).toBe(
+            'Shared footer — https://example.com/docs'
+        );
+    });
+
+    it('falls back shared refs per path from locale file to base file', () => {
+        const files = sharedCatalog();
+        files['refs.de.json'] = { footers: { shared: 'Geteilte Fußzeile' } };
+        (files['info/info.de.json'] as any) = { data: { a: '{{REF:footers.shared}}' } };
+        (files['errors/errors.de.json'] as any) = { data: { c: '{{REF:words.bot}}' } };
+        const result = compileCatalog(writeCatalog(files));
+        expect(result.diagnostics.errors).toEqual([]);
+        expect((result.artifact!.catalog['de']!['info.a'] as any).nodes[0].value).toBe(
+            'Geteilte Fußzeile'
+        );
+        // words.bot is absent from refs.de.json → falls back to refs.en-US.json.
+        expect((result.artifact!.catalog['de']!['errors.c'] as any).nodes[0].value).toBe('the bot');
+    });
+
+    it('reports unknown refs referenced from the shared file', () => {
+        const files = sharedCatalog();
+        (files['refs.en-US.json'] as any).broken = { x: '{{REF:nope.missing}}' };
+        const result = compileCatalog(writeCatalog(files));
+        expect(result.diagnostics.errors.map(d => d.code)).toContain(DiagnosticCode.UNKNOWN_REF);
+    });
+
+    it('rejects a namespace directory named refs', () => {
+        const result = compileCatalog(
+            writeCatalog({
+                'linguini.config.json': { baseLocale: 'en-US' },
+                'refs/refs.en-US.json': { data: { x: 'nope' } },
+                'info/info.en-US.json': { data: { y: 'ok' } },
+            })
+        );
+        expect(result.diagnostics.errors.map(d => d.code)).toContain(
+            DiagnosticCode.RESERVED_NAMESPACE
+        );
+    });
+});
+
 describe('Diagnostics helpers', () => {
     it('warn() records a warning and formatDiagnostic renders it', () => {
         const diagnostics = new Diagnostics();

@@ -8,6 +8,7 @@ import { compileCatalog, writeArtifact } from '../compiler/compile.js';
 import type { CompileResult } from '../compiler/compile.js';
 import { formatDiagnostic } from '../compiler/diagnostics.js';
 import { hashSchema } from '../compiler/schema.js';
+import { migrateCatalog } from '../migrate/migrate.js';
 
 const USAGE = `Usage:
   linguini compile [catalogDir]              Compile the catalog: write the artifact (and bindings, if configured)
@@ -15,6 +16,11 @@ const USAGE = `Usage:
                                              Validate without writing; with --bindings, verify the
                                              generated file's schemaHash matches the catalog
   linguini watch [catalogDir]                Recompile on file changes (development)
+  linguini migrate <v1Dir> --out <dir> [--object-type <name>] [--base-locale <locale>]
+                   [--no-hoist-refs] [--report <file>]
+                                             Convert a v1 catalog to the v2 format, compile the
+                                             result, render-diff it against v1 semantics, and
+                                             write a triage report
 `;
 
 type Logger = (message: string) => void;
@@ -26,6 +32,11 @@ export async function runCli(argv: string[], log: Logger = console.log): Promise
         options: {
             bindings: { type: 'string' },
             help: { type: 'boolean', short: 'h' },
+            out: { type: 'string' },
+            'object-type': { type: 'string' },
+            'base-locale': { type: 'string' },
+            'no-hoist-refs': { type: 'boolean' },
+            report: { type: 'string' },
         },
     });
 
@@ -43,10 +54,70 @@ export async function runCli(argv: string[], log: Logger = console.log): Promise
             return check(catalogDir, values.bindings, log);
         case 'watch':
             return watchLoop(catalogDir, log);
+        case 'migrate':
+            return migrate(catalogDir, values, log);
         default:
             log(`Unknown command: ${command}\n\n${USAGE}`);
             return 1;
     }
+}
+
+async function migrate(
+    inputDir: string,
+    values: {
+        out?: string;
+        'object-type'?: string;
+        'base-locale'?: string;
+        'no-hoist-refs'?: boolean;
+        report?: string;
+    },
+    log: Logger
+): Promise<number> {
+    if (!values.out) {
+        log('error[MIGRATE] --out <dir> is required');
+        return 1;
+    }
+    const migrateReport = await migrateCatalog(inputDir, {
+        out: values.out,
+        objectType: values['object-type'],
+        baseLocale: values['base-locale'],
+        hoistSharedRefs: values['no-hoist-refs'] ? false : undefined,
+    });
+
+    const reportPath = path.resolve(values.report ?? path.join(values.out, 'migrate-report.json'));
+    mkdirSync(path.dirname(reportPath), { recursive: true });
+    writeFileSync(reportPath, JSON.stringify(migrateReport, null, 2));
+
+    log(
+        `Migrated ${migrateReport.namespaces.length} namespace(s), ` +
+            `${migrateReport.locales.length} locale(s)`
+    );
+    log(`  Variables renamed:       ${migrateReport.variableRenames.length}`);
+    log(`  Tagged $type objects:    ${migrateReport.taggedObjects.length}`);
+    log(`  ICU-escaped values:      ${migrateReport.escapedValues.length}`);
+    log(`  Suspected plural pairs:  ${migrateReport.suspectedPluralPairs.length}`);
+    log(`  Hoisted shared refs:     ${migrateReport.hoistedRefs.length}`);
+    log(`  Ref conflicts:           ${migrateReport.refConflicts.length}`);
+    log(`  Unconvertible values:    ${migrateReport.unconvertible.length}`);
+    log(`  Skipped files:           ${migrateReport.skippedFiles.length}`);
+    log(
+        `  Compile:                 ${migrateReport.compile.errors} error(s), ` +
+            `${migrateReport.compile.warnings} warning(s)`
+    );
+    log(
+        `  Verify:                  ${migrateReport.verify.checked} rendered, ` +
+            `${migrateReport.verify.mismatches.length} mismatch(es)`
+    );
+    log(`Report written to ${reportPath}`);
+
+    const clean =
+        migrateReport.compile.errors === 0 &&
+        migrateReport.verify.mismatches.length === 0 &&
+        migrateReport.unconvertible.length === 0;
+    if (!clean) {
+        log('Migration needs attention — see the report for triage items.');
+    }
+    return clean ? 0 : 1;
 }
 
 function compile(catalogDir: string, log: Logger): number {

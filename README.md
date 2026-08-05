@@ -38,6 +38,7 @@ Catalog layout:
 catalog/
   linguini.config.json
   common.json                 ← shared, locale-independent values
+  refs.en-US.json             ← shared, per-locale refs (all namespaces can use them)
   info/
     info.en-US.json
     info.de.json
@@ -103,10 +104,11 @@ needs `one`/`other`.
 
 ### Refs and common values
 
-`{{REF:path}}` (per-locale, from the namespace's `refs` section) and `{{COM:path}}` (shared,
-from `common.json`) are compile-time includes: fully expanded during `linguini compile`, with
-cycle detection. A lint warns when an include is spliced mid-sentence, since fragments break
-word-form agreement in many languages.
+`{{REF:path}}` (per-locale, from the namespace's `refs` section — falling back to the shared
+`refs.<locale>.json` at the catalog root) and `{{COM:path}}` (locale-independent, from
+`common.json`) are compile-time includes: fully expanded during `linguini compile`, with cycle
+detection. Namespace-local refs override shared refs on collision. A lint warns when an
+include is spliced mid-sentence, since fragments break word-form agreement in many languages.
 
 ### Structured messages
 

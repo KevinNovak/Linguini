@@ -33,6 +33,7 @@ export type CompileResult = {
 };
 
 const LOCALE_FILE_SUFFIX = /^([A-Za-z0-9-]+)\.json$/;
+const SHARED_REFS_FILE = /^refs\.([A-Za-z0-9-]+)\.json$/;
 const CAMEL_CASE = /^[a-z][a-zA-Z0-9]*$/;
 
 type CompileContext = {
@@ -42,6 +43,7 @@ type CompileContext = {
     file: string;
     com: Map<string, string>;
     refs: Map<string, string>;
+    sharedRefs: Map<string, string>;
 };
 
 type CompiledEntry = {
@@ -73,6 +75,41 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
         );
     }
 
+    // Shared per-locale ref tables (refs.<locale>.json at the catalog root). Available to all
+    // namespaces; namespace-local refs override on collision. Shared refs may reference only
+    // other shared refs and COM values.
+    const sharedRaw = new Map<string, Map<string, string>>();
+    for (const entry of readdirSync(catalogDir, { withFileTypes: true })) {
+        const match = entry.isFile() ? entry.name.match(SHARED_REFS_FILE) : null;
+        if (match) {
+            const raw = readJson(path.join(catalogDir, entry.name), diagnostics, entry.name);
+            sharedRaw.set(match[1]!, flattenStrings(raw, diagnostics, entry.name));
+        }
+    }
+    const sharedResolved = new Map<string, Map<string, string>>();
+    const sharedFor = (locale: string): Map<string, string> => {
+        let resolved = sharedResolved.get(locale);
+        if (!resolved) {
+            // Locale file overrides the base file per path, mirroring namespace ref fallback.
+            const merged = new Map([
+                ...(sharedRaw.get(config!.baseLocale) ?? []),
+                ...(locale === config!.baseLocale ? [] : (sharedRaw.get(locale) ?? [])),
+            ]);
+            resolved = resolveIncludes(
+                merged,
+                { self: IncludeKind.REF, com: p => comResolved.get(p) },
+                diagnostics,
+                `refs.${locale}.json`
+            );
+            sharedResolved.set(locale, resolved);
+        }
+        return resolved;
+    };
+    // Validate every shared file, even for locales no namespace ships yet.
+    for (const locale of sharedRaw.keys()) {
+        sharedFor(locale);
+    }
+
     // Namespace discovery.
     let namespaces: string[];
     if (config.namespaces === 'auto') {
@@ -83,6 +120,13 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
             .sort();
     } else {
         namespaces = [...config.namespaces].sort();
+    }
+    if (namespaces.includes('refs')) {
+        diagnostics.error(
+            DiagnosticCode.RESERVED_NAMESPACE,
+            '"refs" is a reserved namespace name — shared ref files are refs.<locale>.json at the catalog root'
+        );
+        namespaces = namespaces.filter(ns => ns !== 'refs');
     }
     if (namespaces.length === 0) {
         diagnostics.error(DiagnosticCode.NO_NAMESPACES, `No namespaces found in ${catalogDir}`);
@@ -113,6 +157,7 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
             ns,
             config.baseLocale,
             comResolved,
+            sharedFor(config.baseLocale),
             config,
             diagnostics,
             (key, entry) => {
@@ -138,6 +183,7 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
                 ns,
                 locale,
                 comResolved,
+                sharedFor(locale),
                 config,
                 diagnostics,
                 (key, entry) => {
@@ -250,6 +296,7 @@ function compileNamespaceLocale(
     ns: string,
     locale: string,
     com: Map<string, string>,
+    sharedRefs: Map<string, string>,
     config: LinguiniConfig,
     diagnostics: Diagnostics,
     sink: (key: string, entry: CompiledEntry) => void
@@ -260,7 +307,8 @@ function compileNamespaceLocale(
         return;
     }
 
-    // Ref table: this locale's refs override the base locale's (per-path fallback).
+    // Ref table: this locale's refs override the base locale's (per-path fallback), and
+    // anything not found locally falls back to the shared table.
     let refsRaw = flattenStrings(raw.refs, diagnostics, file);
     if (locale !== config.baseLocale) {
         const baseFile = `${ns}/${ns}.${config.baseLocale}.json`;
@@ -276,12 +324,12 @@ function compileNamespaceLocale(
     }
     const refs = resolveIncludes(
         refsRaw,
-        { self: IncludeKind.REF, com: p => com.get(p) },
+        { self: IncludeKind.REF, com: p => com.get(p), fallback: p => sharedRefs.get(p) },
         diagnostics,
         file
     );
 
-    const ctx: CompileContext = { config, diagnostics, locale, file, com, refs };
+    const ctx: CompileContext = { config, diagnostics, locale, file, com, refs, sharedRefs };
     walkData(raw.data, ns, ctx, sink);
 }
 
@@ -541,8 +589,10 @@ function compileTextLeaf(
     lintMidSentenceIncludes(text, ctx.config.lint.midSentenceRef, ctx.diagnostics, where);
 
     const expanded = expandIncludes(text, (kind, includePath) => {
-        const table = kind === IncludeKind.REF ? ctx.refs : ctx.com;
-        const value = table.get(includePath);
+        const value =
+            kind === IncludeKind.REF
+                ? (ctx.refs.get(includePath) ?? ctx.sharedRefs.get(includePath))
+                : ctx.com.get(includePath);
         if (value === undefined) {
             ctx.diagnostics.error(
                 kind === IncludeKind.REF ? DiagnosticCode.UNKNOWN_REF : DiagnosticCode.UNKNOWN_COM,

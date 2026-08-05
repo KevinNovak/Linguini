@@ -60,13 +60,18 @@ export function flattenStrings(
 
 /**
  * Resolves every value in `raw`, expanding include tokens. Tokens of `options.self` kind
- * resolve recursively against `raw` itself (with cycle detection); `COM` tokens resolve via
+ * resolve recursively against `raw` itself (with cycle detection), then via
+ * `options.fallback` (e.g. the shared ref table) when absent; `COM` tokens resolve via
  * `options.com` when the table itself is not the common table. Failed includes expand to an
  * empty string so compilation can continue collecting further diagnostics.
  */
 export function resolveIncludes(
     raw: Map<string, string>,
-    options: { self: IncludeKind; com?: (path: string) => string | undefined },
+    options: {
+        self: IncludeKind;
+        com?: (path: string) => string | undefined;
+        fallback?: (path: string) => string | undefined;
+    },
     diagnostics: Diagnostics,
     file: string
 ): Map<string, string> {
@@ -88,6 +93,10 @@ export function resolveIncludes(
         }
         const rawValue = raw.get(path);
         if (rawValue === undefined) {
+            const fallback = options.fallback?.(path);
+            if (fallback !== undefined) {
+                return fallback;
+            }
             diagnostics.error(
                 options.self === IncludeKind.REF
                     ? DiagnosticCode.UNKNOWN_REF

@@ -67,6 +67,8 @@ A catalog is a directory of namespaces. Each namespace is a set of per-locale JS
 catalog/
   linguini.config.json          (or .ts — see §9)
   common.json                   locale-independent refs ({{COM:...}})
+  refs.en-US.json               shared per-locale refs, available to all namespaces
+  refs.de.json
   info/
     info.en-US.json
     info.de.json
@@ -116,8 +118,16 @@ Rules:
 
 ICU has no include mechanism, so refs are a **preprocessing pass** on the raw string before ICU parsing — exactly v1's model, with v1's syntax kept:
 
-- `{{REF:path.to.ref}}` — expands from the *same namespace's* `refs` section, in the message's locale (falling back per §7.2).
+- `{{REF:path.to.ref}}` — expands from the namespace's `refs` section, falling back to the
+  **shared ref table** (`refs.<locale>.json` at the catalog root) when the namespace doesn't
+  define the path. Both tables resolve per locale with per-path fallback to the base locale;
+  namespace-local always overrides shared on collision.
 - `{{COM:path}}` — expands from `common.json` (locale-independent).
+
+Shared refs exist because v1 catalogs repeated the same refs (footers, boilerplate) across
+every namespace file. They are translatable (per-locale), unlike `common.json`. Shared ref
+values may reference only other shared refs and COM values — never namespace-local refs (they
+are validated standalone). `refs` is consequently a reserved namespace name.
 
 Rules:
 
