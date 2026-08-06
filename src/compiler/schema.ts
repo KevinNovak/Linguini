@@ -25,6 +25,22 @@ export function hashSchema(schema: CatalogSchema): string {
     return `sha256:${hash}`;
 }
 
+/** Per-key schema hashes: the granular contract behind subset validation (design §14). */
+export function hashKeySchemas(schema: CatalogSchema): { [key: string]: string } {
+    const out: { [key: string]: string } = {};
+    for (const key of Object.keys(schema).sort()) {
+        out[key] = `sha256:${createHash('sha256')
+            .update(canonicalStringify(schema[key]))
+            .digest('hex')}`;
+    }
+    return out;
+}
+
+/** Identity of a bindings target's key subset (its keys + their schema hashes). */
+export function hashSubset(subset: { [key: string]: string }): string {
+    return `sha256:${createHash('sha256').update(canonicalStringify(subset)).digest('hex')}`;
+}
+
 /** Content identity of a compiled artifact: equal hash ⇒ identical rendered output. */
 export function hashContent(
     catalog: Artifact['catalog'],

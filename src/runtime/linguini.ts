@@ -60,9 +60,33 @@ export type ArtifactSource = string | Artifact;
 export class Linguini {
     private options: LinguiniOptions;
     private artifact?: Artifact;
+    /** Union of every registered bindings subset: key → schema hash (design §14.4). */
+    private registeredSubsets = new Map<string, string>();
 
     constructor(options: LinguiniOptions = {}) {
         this.options = options;
+    }
+
+    /**
+     * Registers a bindings target's schema subset. Subsets accumulate (one process may load
+     * several generated modules); artifact loads then validate against the union. When an
+     * artifact is already loaded, the new subset is validated immediately — a mismatch fails
+     * fast at module import instead of at first render.
+     */
+    public registerSchemaSubset(subset: { [key: string]: string }): void {
+        for (const [key, sigHash] of Object.entries(subset)) {
+            const existing = this.registeredSubsets.get(key);
+            if (existing !== undefined && existing !== sigHash) {
+                throw new LinguiniError(
+                    `Conflicting schema subsets for key "${key}" — two generated bindings ` +
+                        'modules disagree; recompile all bindings together'
+                );
+            }
+            this.registeredSubsets.set(key, sigHash);
+        }
+        if (this.artifact) {
+            this.validateSubsets(this.artifact, subset);
+        }
     }
 
     /**
@@ -247,6 +271,40 @@ export class Linguini {
             if (catalog[locale] === undefined) {
                 throw new LinguiniError(
                     `Locale "${locale}" listed in manifest but missing from catalog`
+                );
+            }
+        }
+        this.validateSubsets(artifact, Object.fromEntries(this.registeredSubsets));
+    }
+
+    /**
+     * Subset validation (design §14.4): every registered key must exist in the artifact with a
+     * matching per-key schema hash. Keys outside the registered subsets are unconstrained —
+     * that is the whole point: schema changes to keys this process never renders pass through.
+     */
+    private validateSubsets(artifact: Artifact, subset: { [key: string]: string }): void {
+        const keys = Object.keys(subset);
+        if (keys.length === 0) {
+            return;
+        }
+        const keyHashes = artifact.manifest.keySchemaHashes;
+        if (!keyHashes) {
+            throw new LinguiniError(
+                'Artifact has no keySchemaHashes — it was compiled by a linguini version ' +
+                    'without subset support; recompile the catalog'
+            );
+        }
+        for (const key of keys) {
+            const actual = keyHashes[key];
+            if (actual === undefined) {
+                throw new LinguiniError(
+                    `Artifact is missing key "${key}" required by a registered bindings subset`
+                );
+            }
+            if (actual !== subset[key]) {
+                throw new LinguiniError(
+                    `Artifact schema for "${key}" does not match the registered bindings subset — ` +
+                        'the catalog changed this key\'s shape; ship the regenerated bindings as code'
                 );
             }
         }

@@ -23,7 +23,7 @@ import {
     resolveIncludes,
     UNKNOWN_TOKEN_REGEX,
 } from './refs.js';
-import { canonicalStringify, hashContent, hashSchema } from './schema.js';
+import { canonicalStringify, hashContent, hashKeySchemas, hashSchema } from './schema.js';
 
 export type CompileResult = {
     diagnostics: Diagnostics;
@@ -257,6 +257,7 @@ export function compileCatalog(catalogDir: string, config?: LinguiniConfig): Com
         manifest: {
             formatVersion: ARTIFACT_FORMAT_VERSION,
             schemaHash: hashSchema(schema),
+            keySchemaHashes: hashKeySchemas(schema),
             contentHash: hashContent(catalog, common),
             baseLocale: config.baseLocale,
             locales: [...allLocales].sort(),

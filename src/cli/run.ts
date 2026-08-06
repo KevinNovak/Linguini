@@ -2,7 +2,8 @@ import { watch } from 'node:fs';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { generateBindings } from '../compiler/bindings.js';
+import { generateBindings, generateTargetBindings } from '../compiler/bindings.js';
+import { discoverTargetKeys } from '../compiler/discovery.js';
 import { loadConfig } from '../compiler/config.js';
 import { compileCatalog, writeArtifact } from '../compiler/compile.js';
 import type { CompileResult } from '../compiler/compile.js';
@@ -133,15 +134,12 @@ function compile(catalogDir: string, log: Logger): number {
     log(`Artifact written to ${outDir}`);
 
     if (config.bindings) {
-        const bindingsPath = path.resolve(catalogDir, config.bindings.out);
-        const contents = generateBindings(
-            result.schema,
-            result.artifact.manifest.schemaHash,
-            config.bindings
-        );
-        mkdirSync(path.dirname(bindingsPath), { recursive: true });
-        writeFileSync(bindingsPath, contents);
-        log(`Bindings written to ${bindingsPath}`);
+        for (const [outPath, contents] of renderAllBindings(catalogDir, config, result)) {
+            const bindingsPath = path.resolve(catalogDir, outPath);
+            mkdirSync(path.dirname(bindingsPath), { recursive: true });
+            writeFileSync(bindingsPath, contents);
+            log(`Bindings written to ${bindingsPath}`);
+        }
     }
 
     log(
@@ -153,11 +151,74 @@ function compile(catalogDir: string, log: Logger): number {
     return 0;
 }
 
+/**
+ * Renders every configured bindings module: the per-target subset modules (design §14) and,
+ * when `bindings.out` is set, the whole-catalog module (the pre-targets behavior, unchanged).
+ * Returns [outPath, contents] pairs with paths relative to the catalog directory.
+ */
+function renderAllBindings(
+    catalogDir: string,
+    config: ReturnType<typeof loadConfig>,
+    result: CompileResult
+): Array<[string, string]> {
+    const bindings = config.bindings!;
+    const out: Array<[string, string]> = [];
+    if (bindings.out) {
+        out.push([
+            bindings.out,
+            generateBindings(result.schema!, result.artifact!.manifest.schemaHash, bindings),
+        ]);
+    }
+    for (const target of bindings.targets ?? []) {
+        const subsetKeys = discoverTargetKeys(target, Object.keys(result.schema!), catalogDir);
+        out.push([
+            target.out,
+            generateTargetBindings(
+                result.schema!,
+                result.artifact!.manifest.keySchemaHashes,
+                target,
+                subsetKeys,
+                bindings
+            ),
+        ]);
+    }
+    return out;
+}
+
 function check(catalogDir: string, bindingsFile: string | undefined, log: Logger): number {
     const result = compileCatalog(catalogDir);
     report(result, log);
     if (!result.schema) {
         return 1;
+    }
+
+    const config = loadConfig(catalogDir);
+    if (config.bindings?.targets) {
+        // Multi-target mode: verify every configured module matches a fresh render byte-for-byte.
+        let stale = 0;
+        for (const [outPath, expected] of renderAllBindings(catalogDir, config, result)) {
+            const abs = path.resolve(catalogDir, outPath);
+            let actual: string | undefined;
+            try {
+                actual = readFileSync(abs, 'utf8');
+            } catch {
+                actual = undefined;
+            }
+            if (actual === undefined) {
+                log(`error[BINDINGS] Missing generated module: ${outPath}`);
+                stale++;
+            } else if (actual.replace(/\r\n/g, '\n') !== expected.replace(/\r\n/g, '\n')) {
+                log(
+                    `error[BINDINGS] Stale generated module: ${outPath} — run \`linguini compile\` ` +
+                        'and ship the regenerated bindings as a code change'
+                );
+                stale++;
+            }
+        }
+        if (stale > 0) {
+            return 1;
+        }
+        log(`All ${(config.bindings.targets.length + (config.bindings.out ? 1 : 0))} bindings module(s) up to date`);
     }
 
     if (bindingsFile) {
@@ -200,9 +261,11 @@ export function startWatch(catalogDir: string, log: Logger): WatchHandle {
     let ignoredPrefixes: string[] = [];
     try {
         const config = loadConfig(catalogDir);
-        const outputs = [config.out, config.bindings?.out].filter(
-            (out): out is string => out !== undefined
-        );
+        const outputs = [
+            config.out,
+            config.bindings?.out,
+            ...(config.bindings?.targets ?? []).map(target => target.out),
+        ].filter((out): out is string => out !== undefined);
         // For the bindings file, its containing directory also emits watch events when the
         // file is (re)created — ignore that directory too, unless it is the catalog root.
         ignoredPrefixes = outputs

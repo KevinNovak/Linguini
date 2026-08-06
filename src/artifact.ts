@@ -102,6 +102,13 @@ export type ArtifactManifest = {
      * identity (dedupe, versioned storage paths, "what is live" logging).
      */
     contentHash: string;
+    /**
+     * Per-key hash of each message's schema (params + typeName) — the granular half of
+     * the code/content contract. Subset-validating consumers (design §14) check only the
+     * keys they render against these, so a schema change to keys a process never uses
+     * hot-swaps straight past it.
+     */
+    keySchemaHashes: { [key: string]: string };
     baseLocale: string;
     locales: string[];
     namespaces: string[];

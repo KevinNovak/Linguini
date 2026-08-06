@@ -20,12 +20,19 @@ export type LinguiniConfig = {
     /** Artifact output directory, relative to the catalog directory. */
     out: string;
     bindings?: {
-        /** Generated bindings file path, relative to the catalog directory. */
-        out: string;
+        /**
+         * Generated bindings file path, relative to the catalog directory. With no
+         * `targets`, this single whole-catalog output is the (fully backward-compatible)
+         * behavior; with `targets`, `out` is optional and, when present, still emits the
+         * whole-catalog module alongside the per-target ones.
+         */
+        out?: string;
         /** Module specifier the bindings import the runtime from. */
         runtimeImport?: string;
         /** `$type` name → `"module-specifier#ExportedType"` for binding return types. */
         types?: { [typeName: string]: string };
+        /** Per-consumer subset bindings (design §14). Each target gets its own module. */
+        targets?: BindingsTarget[];
     };
     lint: {
         /** A ref/com token with non-whitespace directly on both sides. */
@@ -43,6 +50,25 @@ export type LinguiniConfig = {
     };
     /** Severity of keys present in the base locale but missing from another locale. */
     missingKeys: LintLevel.WARN | LintLevel.ERROR;
+};
+
+export type BindingsTarget = {
+    /** Display name (logs, check output). */
+    name: string;
+    /** Generated module path, relative to the catalog directory. */
+    out: string;
+    /**
+     * Source globs to scan for accessor chains (`<ident>.<dotted.key>`), relative to the
+     * catalog directory. Supported forms: `dir/**` + `/*.ts`-style extension tails.
+     */
+    scan?: string[];
+    /** Explicit keys: exact (`ns.a.b`) or namespace-family globs (`ns.**`). Unions with `scan`. */
+    keys?: string[];
+    /** Tree variable names the scan recognizes. Default: `['t', 'tl']`. */
+    scanIdentifiers?: string[];
+    /** Overrides of the shared bindings defaults. */
+    runtimeImport?: string;
+    types?: { [typeName: string]: string };
 };
 
 export const CONFIG_FILE_NAME = 'linguini.config.json';
@@ -94,6 +120,35 @@ export function resolveConfig(raw: any, source = 'config'): LinguiniConfig {
     const missingKeys = raw.missingKeys ?? DEFAULTS.missingKeys;
     if (missingKeys !== LintLevel.WARN && missingKeys !== LintLevel.ERROR) {
         throw new LinguiniError(`${source}: missingKeys must be "warn" or "error"`);
+    }
+    if (raw.bindings) {
+        const { out, targets } = raw.bindings;
+        if (targets !== undefined) {
+            if (!Array.isArray(targets) || targets.length === 0) {
+                throw new LinguiniError(`${source}: bindings.targets must be a non-empty array`);
+            }
+            const names = new Set<string>();
+            for (const target of targets) {
+                if (typeof target?.name !== 'string' || typeof target?.out !== 'string') {
+                    throw new LinguiniError(
+                        `${source}: every bindings target needs "name" and "out"`
+                    );
+                }
+                if (names.has(target.name)) {
+                    throw new LinguiniError(
+                        `${source}: duplicate bindings target name "${target.name}"`
+                    );
+                }
+                names.add(target.name);
+                if (!Array.isArray(target.scan) && !Array.isArray(target.keys)) {
+                    throw new LinguiniError(
+                        `${source}: bindings target "${target.name}" needs "scan" and/or "keys"`
+                    );
+                }
+            }
+        } else if (typeof out !== 'string' || out.length === 0) {
+            throw new LinguiniError(`${source}: bindings.out is required without bindings.targets`);
+        }
     }
     return {
         baseLocale: raw.baseLocale,
