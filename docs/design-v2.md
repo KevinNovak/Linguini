@@ -312,3 +312,50 @@ What v2 ships instead of compatibility:
 2. **`list` type syntax** — `{names, list}` as an ICU extension vs. requiring pre-formatted strings. (Resolved: supported, backed by `Intl.ListFormat`.)
 3. **Weighted variants** (`$variants` with weights) — v2.0 or later? (Lean: later; keep 2.0 surface small.)
 4. ~~Name for the generated accessor tree~~ **Resolved:** factory is `createMessages(lx)`, the conventional tree variable is `t`, and core ships `bindLocale(t, locale)` — a typed locale-bound view (`LocaleBound<T>` strips each accessor's leading locale parameter) so consumers resolve the locale once per interaction: `tl.info.greeting({ name })`. The unbound tree remains for registration metadata, `formatAll`, and cross-locale formatting.
+
+## 14. Per-target bindings & subset validation (2.0.x addition)
+
+Motivation (from Birthday Bot, generic in nature): with one generated bindings module, any schema change invalidates every consumer's build, even consumers whose *used keys* did not change. Multi-service consumers want schema-change blast radius scoped to the services that reference the changed keys. Everything below is **strictly opt-in**: a config with today's single `bindings` object behaves byte-for-byte as before.
+
+### 14.1 Config: `bindings.targets`
+
+```jsonc
+"bindings": {
+    "runtimeImport": "linguini",           // shared defaults, overridable per target
+    "types": { "embed": "./types.js#LangEmbed" },
+    "targets": [
+        {
+            "name": "celebration-domain",
+            "out": "../packages/celebration-domain/src/generated/lang.ts",
+            "scan": ["../packages/celebration-domain/src/**/*.ts"],
+            "scanIdentifiers": ["t", "tl"]  // default; the tree/bound-tree variable names
+        },
+        { "name": "gateway", "out": "../apps/bot-gateway/src/generated/lang.ts", "scan": ["../apps/bot-gateway/src/**/*.ts"] }
+    ]
+}
+```
+
+- A target's key set is discovered by scanning `scan` sources for `<ident>.<dotted.path>` accessor chains against the compiled key list (same matcher the Birthday Bot migration tooling proved), or supplied explicitly via `keys` (exact keys or `ns.**` globs). `scan` and `keys` union when both given.
+- Single-object `bindings` (no `targets`) is compiled as one implicit whole-catalog target — the current behavior, unchanged.
+- `linguini check --bindings` verifies **every** target: drift in any generated module fails; a scan discovering keys absent from the catalog fails; `watch` recompiles all targets.
+
+### 14.2 Manifest: per-key signature hashes
+
+`manifest.keySchemaHashes` — `{ [key]: sigHash }` where `sigHash` is the canonical hash of that key's `MessageSchema` (params + typeName). Always emitted (additive; existing consumers ignore it). The aggregate `schemaHash` remains and is unchanged in derivation.
+
+### 14.3 Generated module surface
+
+Each target's module exports `createMessages(lx)` scoped to its keys, plus `schemaSubset: { [key]: sigHash }` and `subsetHash` (hash over the subset map, for logging/fast equality).
+
+### 14.4 Runtime: subset registration and union validation
+
+- `lx.registerSchemaSubset(subset)` — accumulates; typically called by each generated module's lazy init. Registering against an already-loaded artifact validates immediately (throw on mismatch = fail fast at import).
+- `load()` validation, in addition to today's checks: for every registered subset key, the artifact must contain the key with a matching `keySchemaHashes` entry. Reload rejection semantics unchanged (previous artifact keeps serving, `onRejected` fires).
+- The `schemaHash` constructor option is still honored; aggregate and subset checks compose (both apply when both present). Artifacts lacking `keySchemaHashes` (pre-feature) fail subset validation only if subsets are registered — the error message says to recompile.
+
+### 14.5 Testing
+
+- Discovery: fixture consumer sources → expected key sets (chains, bound-tree usage, prefix-key boundaries).
+- Golden: multi-target fixture → snapshot modules; `check` failing fixtures per target.
+- Runtime: accept artifact with non-subset schema changes; reject on subset key signature change / missing key; immediate-registration failure; union of multiple subsets.
+- Back-compat: single-object bindings config → identical output to 2.0.0-alpha baseline.
