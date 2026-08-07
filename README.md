@@ -159,6 +159,7 @@ const lx = new Linguini({
 
 ```
 linguini compile [catalogDir]                    # write artifact + bindings
+linguini compile [catalogDir] --artifact-only    # artifact only; skip bindings (e.g. pruned Docker builds)
 linguini check [catalogDir] [--bindings <file>]  # validate; verify bindings schemaHash in CI
 linguini watch [catalogDir]                      # recompile on change (development)
 ```

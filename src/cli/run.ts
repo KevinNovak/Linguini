@@ -12,7 +12,10 @@ import { hashSchema } from '../compiler/schema.js';
 import { migrateCatalog } from '../migrate/migrate.js';
 
 const USAGE = `Usage:
-  linguini compile [catalogDir]              Compile the catalog: write the artifact (and bindings, if configured)
+  linguini compile [catalogDir] [--artifact-only]
+                                             Compile the catalog: write the artifact (and bindings,
+                                             if configured); --artifact-only skips bindings, for
+                                             environments without the bindings targets' source trees
   linguini check [catalogDir] [--bindings <file>]
                                              Validate without writing; with --bindings, verify the
                                              generated file's schemaHash matches the catalog
@@ -31,6 +34,7 @@ export async function runCli(argv: string[], log: Logger = console.log): Promise
         args: argv,
         allowPositionals: true,
         options: {
+            'artifact-only': { type: 'boolean' },
             bindings: { type: 'string' },
             help: { type: 'boolean', short: 'h' },
             out: { type: 'string' },
@@ -50,7 +54,7 @@ export async function runCli(argv: string[], log: Logger = console.log): Promise
 
     switch (command) {
         case 'compile':
-            return compile(catalogDir, log);
+            return compile(catalogDir, log, { artifactOnly: values['artifact-only'] ?? false });
         case 'check':
             return check(catalogDir, values.bindings, log);
         case 'watch':
@@ -121,7 +125,11 @@ async function migrate(
     return clean ? 0 : 1;
 }
 
-function compile(catalogDir: string, log: Logger): number {
+function compile(
+    catalogDir: string,
+    log: Logger,
+    options: { artifactOnly?: boolean } = {}
+): number {
     const result = compileCatalog(catalogDir);
     report(result, log);
     if (!result.artifact || !result.schema) {
@@ -133,7 +141,7 @@ function compile(catalogDir: string, log: Logger): number {
     writeArtifact(result.artifact, outDir);
     log(`Artifact written to ${outDir}`);
 
-    if (config.bindings) {
+    if (config.bindings && !options.artifactOnly) {
         for (const [outPath, contents] of renderAllBindings(catalogDir, config, result)) {
             const bindingsPath = path.resolve(catalogDir, outPath);
             mkdirSync(path.dirname(bindingsPath), { recursive: true });
@@ -218,7 +226,9 @@ function check(catalogDir: string, bindingsFile: string | undefined, log: Logger
         if (stale > 0) {
             return 1;
         }
-        log(`All ${(config.bindings.targets.length + (config.bindings.out ? 1 : 0))} bindings module(s) up to date`);
+        log(
+            `All ${config.bindings.targets.length + (config.bindings.out ? 1 : 0)} bindings module(s) up to date`
+        );
     }
 
     if (bindingsFile) {

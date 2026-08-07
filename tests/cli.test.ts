@@ -42,6 +42,36 @@ describe('CLI', () => {
         expect(bindings).toContain('export function createMessages');
     });
 
+    it('compile --artifact-only writes the artifact and skips bindings', async () => {
+        // A target whose scan path does not exist (e.g. a pruned Docker workspace) makes a
+        // full compile throw — --artifact-only must not touch bindings at all.
+        const files = basicCatalog();
+        (files['linguini.config.json'] as any) = {
+            baseLocale: 'en-US',
+            out: 'dist',
+            bindings: {
+                out: 'generated/messages.ts',
+                targets: [
+                    {
+                        name: 'missing-consumer',
+                        out: 'generated/missing.ts',
+                        scan: ['no-such-dir/**/*.ts'],
+                    },
+                ],
+            },
+        };
+        const dir = writeCatalog(files);
+
+        await expect(run(['compile', dir])).rejects.toThrow('scan path not found');
+
+        const { code, output } = await run(['compile', dir, '--artifact-only']);
+        expect(code).toBe(0);
+        expect(output).toContain('Artifact written');
+        expect(output).not.toContain('Bindings written');
+        expect(existsSync(path.join(dir, 'dist', 'manifest.json'))).toBe(true);
+        expect(existsSync(path.join(dir, 'generated'))).toBe(false);
+    });
+
     it('check verifies bindings schemaHash', async () => {
         const dir = catalogWithBindings();
         await run(['compile', dir]);
